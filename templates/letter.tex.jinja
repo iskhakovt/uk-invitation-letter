@@ -1,0 +1,15 @@
+\documentclass{letter}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{hyperref}
+
+\usepackage[UKenglish]{babel}
+\usepackage[UKenglish]{isodate}
+
+\signature{ {% block signature %}{% endblock %} }
+\address{ {% block addressor %}{% endblock %} }
+\begin{document}
+
+\begin{letter}{ {% block addressee %}{% endblock %} }
+{% block body %}{% endblock %}
+\end{letter}
+\end{document}
