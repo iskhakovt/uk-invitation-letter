@@ -41,7 +41,7 @@ inviter: !entity
   phone: "07758888305"
   email: slwzgtew2wj@temporary-mail.net
 
-work: !entity
+employer: !entity
   name: Jstory UK Ltd
   address: !address
     lines:
