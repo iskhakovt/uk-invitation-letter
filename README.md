@@ -76,7 +76,7 @@ trip: !trip
 3. Run the generator
 
 ```bash
-python3 src/invitation.py
+LATEX_BINARY=<path to latex binary> python3 src/invitation.py
 ```
 
 The output will be saved to `build/invitation.pdf`.
