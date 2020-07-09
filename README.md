@@ -64,7 +64,6 @@ invitee: !entity
   relationship: friends
 
 trip: !trip
-  generate_date: null # today by default
   arrival_date: 2020-01-01
   departure_date: 2020-01-31
   reason: a short trip
