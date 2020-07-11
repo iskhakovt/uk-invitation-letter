@@ -25,7 +25,6 @@ def main():
     with open('build/invitation.tex', 'w') as output_file:
         output_file.write(output_text)
 
-    from pathlib import Path
     subprocess.call([LATEX_BINARY, '-output-directory', 'build', 'build/invitation.tex'])
 
 
