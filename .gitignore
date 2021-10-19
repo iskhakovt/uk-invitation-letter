@@ -1,3 +1,6 @@
+# Project specific
+data.yml
+
 # Editors
 .vscode/
 .idea/
