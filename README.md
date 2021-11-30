@@ -1,7 +1,7 @@
 UK visa invitation letter generator.
 ====================================
 
-Auto-generates UK tourist visa application.
+Auto-generates UK tourist visa invitation letter.
 
 
 ---
