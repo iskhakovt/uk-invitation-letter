@@ -25,3 +25,7 @@ def phone_format(phone):
 
 def fix_floating_punctuation(s):
     return re.sub(r'\ +([^\w\s])', r'\g<1>', s)
+
+
+def use_non_breaking_space(s):
+    return re.sub(' ', '~', s)

@@ -24,9 +24,9 @@ United Kingdom \\
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I, {{ inviter.full_name() }}, would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK tourist visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK tourist visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
-I am able to accomodate {{ invitee.short_name() }} at my place, {{ inviter.address.line() }}.
+I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.address.line() }}.
 {% if trip.financial_support %}
 {{ invitee.pronoun_subject().capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun_determiner() }} journey will be met by me.
 {% else %}
@@ -39,13 +39,18 @@ While in the UK, {{ invitee.pronoun_subject() }} will not engage in gainful empl
 After {{ invitee.pronoun_determiner() }} trip to the UK, {{ invitee.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} in order to {{ trip.return_reason }}{% endif %}.
 {% endif %}
 
+{% if trip.covid %}
+We are aware of the coronavirus guidelines, and we will respect them and re-plan the trip if necessary.
+{% endif %}
+
 I am currently employed at {{ employer.full_name() }}, {{ employer.address.line() }}.
 
 I have enclosed the following documents:
 \begin{itemize}
-\item Copy of passport, residence permit, and employment reference;
-{% if trip.financial_support %} \item Latest payslip; {% endif %}
-\item Tenancy agreement.
+\item residence permit;
+\item employment reference;
+{% if trip.financial_support %} \item latest payslip; {% endif %}
+\item proof of address\;(council tax bill).
 \end{itemize}
 
 Should you wish to discuss this application further, please do not hesitate to contact me.

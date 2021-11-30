@@ -6,11 +6,14 @@ import util
 class Address(yaml.YAMLObject):
     yaml_tag = '!address'
 
+    def __get_lines(self):
+        return list(map(util.use_non_breaking_space, self.lines))
+
     def line(self):
-        return ', '.join(self.lines)
+        return ', '.join(self.__get_lines())
 
     def multiline(self):
-        return '\\\\\n'.join(self.lines)
+        return '\\\\\n'.join(self.__get_lines())
 
 
 class Entity(yaml.YAMLObject):
@@ -30,7 +33,7 @@ class Entity(yaml.YAMLObject):
 
     def full_name(self):
         names = [self.name] if isinstance(self.name, str) else self.name
-        return util.and_join(names)
+        return util.and_join(list(map(util.use_non_breaking_space, names)))
 
     def short_name(self):
         names = [self.name] if isinstance(self.name, str) else self.name
