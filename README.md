@@ -36,7 +36,7 @@ inviter: !entity
   address: !address
     lines:
       - 75 Hertingfordbury Road
-      - NEWTON NG13~8QY
+      - NEWTON NG13 8QY
       # UK auto-added
   phone: "07758888305"
   email: slwzgtew2wj@temporary-mail.net
@@ -46,7 +46,7 @@ employer: !entity
   address: !address
     lines:
       - 89 Well Lane
-      - PATTERDALE CA11~0LQ
+      - PATTERDALE CA11 0LQ
 
 embassy: !entity
   name: British Embassy Moscow
