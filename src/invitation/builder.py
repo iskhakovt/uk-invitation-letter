@@ -4,18 +4,18 @@ import subprocess
 import jinja2
 import yaml
 
-from model import Address, Entity, Trip
-from util import date_format, phone_format, fix_floating_punctuation
+from .model import Address, Entity, Trip
+from .util import date_format, phone_format, fix_floating_punctuation
 
 
-LATEX_BINARY = os.environ.get('LATEX_BINARY', '/usr/local/texlive/2020/bin/x86_64-darwin/xelatex')
+LATEX_BINARY = os.environ.get('LATEX_BINARY', '/usr/bin/xelatex')
 
 
 def main():
     with open('data.yml') as config_file:
         config = yaml.full_load(config_file)
 
-    template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath='./templates'))
+    template_env = jinja2.Environment(loader=jinja2.PackageLoader('invitation', 'templates'))
     template = template_env.get_template('invitation.tex.jinja')
     output_text = template.render(**config, date_format=date_format, phone_format=phone_format)
     output_text = fix_floating_punctuation(output_text)

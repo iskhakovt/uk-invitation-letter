@@ -1,13 +1,13 @@
 import yaml
 
-import util
+from .util import and_join, use_non_breaking_space
 
 
 class Address(yaml.YAMLObject):
     yaml_tag = '!address'
 
     def __get_lines(self):
-        return list(map(util.use_non_breaking_space, self.lines))
+        return list(map(use_non_breaking_space, self.lines))
 
     def line(self):
         return ', '.join(self.__get_lines())
@@ -33,11 +33,11 @@ class Entity(yaml.YAMLObject):
 
     def full_name(self):
         names = [self.name] if isinstance(self.name, str) else self.name
-        return util.and_join(list(map(util.use_non_breaking_space, names)))
+        return and_join(list(map(use_non_breaking_space, names)))
 
     def short_name(self):
         names = [self.name] if isinstance(self.name, str) else self.name
-        return util.and_join(list(map(lambda name: name.split(' ')[0], names)))
+        return and_join(list(map(lambda name: name.split(' ')[0], names)))
 
 
 class Trip(yaml.YAMLObject):

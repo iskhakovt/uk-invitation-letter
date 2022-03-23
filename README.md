@@ -20,10 +20,10 @@ python3 -m venv env
 source env/bin/activate
 ```
 
-1. Install the dependencies
+1. Install the package
 
 ```bash
-pip3 install -r requirements.txt
+python3 setup.py install
 ```
 
 2. Create `data.yml` config file
@@ -75,7 +75,7 @@ trip: !trip
 3. Run the generator
 
 ```bash
-LATEX_BINARY=<path to latex binary> python3 src/invitation.py
+LATEX_BINARY=<path to latex binary> uk-letter
 ```
 
 The output will be saved to `build/invitation.pdf`.
