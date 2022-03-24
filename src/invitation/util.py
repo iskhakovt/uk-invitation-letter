@@ -9,18 +9,20 @@ def and_join(strs):
         return strs[0]
     if len(strs) == 2:
         return '{} and {}'.format(strs[0], strs[1])
-    return ', '.join(strs[:-1]) + ', and ' + strs[-1]
+    return ', '.join(strs[:-1]) + ', and~' + strs[-1]
 
 
 def date_format(date):
-    return date.strftime('%-d %B %Y')
+    return date.strftime('%-d~%B~%Y')
 
 
 def phone_format(phone):
-    return phonenumbers.format_number(
-        phonenumbers.parse(phone, 'GB'),
-        phonenumbers.PhoneNumberFormat.NATIONAL
-    )
+    return use_non_breaking_space(
+            phonenumbers.format_number(
+                phonenumbers.parse(phone, 'GB'),
+                phonenumbers.PhoneNumberFormat.NATIONAL
+            )
+        )
 
 
 def fix_floating_punctuation(s):

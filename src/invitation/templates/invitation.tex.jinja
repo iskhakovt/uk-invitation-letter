@@ -9,7 +9,7 @@
 {% block addressor %}
 {{ inviter.full_name() }} \\
 {{ inviter.address.multiline() }} \\
-United Kingdom \\
+United~Kingdom \\
 {{ phone_format(inviter.phone) }} \\
 {{ inviter.email }} \\
 {% endblock %}
@@ -24,7 +24,7 @@ United Kingdom \\
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK tourist visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK tourist visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
 I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.address.line() }}.
 {% if trip.financial_support %}
