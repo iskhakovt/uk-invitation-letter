@@ -75,7 +75,7 @@ trip: !trip
 3. Run the generator
 
 ```bash
-LATEX_BINARY=<path to latex binary> uk-letter
+LATEX_BINARY=<path to latex binary> uk-invitation-letter
 ```
 
 The output will be saved to `build/invitation.pdf`.
