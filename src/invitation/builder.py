@@ -8,7 +8,7 @@ from .model import Address, Entity, Trip
 from .util import date_format, phone_format, fix_floating_punctuation
 
 
-LATEX_BINARY = os.environ.get('LATEX_BINARY', '/usr/bin/xelatex')
+LATEX_BINARY = os.environ.get('LATEX_BINARY', 'xelatex')
 
 
 def main():
