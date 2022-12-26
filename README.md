@@ -9,21 +9,21 @@ Auto-generates UK tourist visa invitation letter.
 ### Requirements
 
 * Python 3
+* [tox](https://tox.wiki/en/latest/installation.html)
 * LaTeX
 
 ### Usage
 
-0. [Optional] Create python virtualenv
+1. Build the package:
 
 ```bash
-python3 -m venv env
-source env/bin/activate
+tox
 ```
 
-1. Install the package
+2. Install the package (you are encouraged to use a virtual environment):
 
 ```bash
-python3 setup.py install
+pip install build/dist/uk-invitation-letter-0.0.0.tar.gz
 ```
 
 2. Create `data.yml` config file
