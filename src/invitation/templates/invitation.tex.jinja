@@ -24,7 +24,7 @@ United~Kingdom \\
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK tourist visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK visitor visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
 I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.address.line() }}.
 {% if trip.financial_support %}
@@ -36,7 +36,7 @@ I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.addr
 While in the UK, {{ invitee.pronoun_subject() }} will not engage in gainful employment.
 
 {% if trip.return_country or trip.return_reason %}
-After {{ invitee.pronoun_determiner() }} trip to the UK, {{ invitee.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} in order to {{ trip.return_reason }}{% endif %}.
+After {{ invitee.pronoun_determiner() }} trip to the UK, {{ invitee.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
 {% endif %}
 
 {% if trip.covid %}
