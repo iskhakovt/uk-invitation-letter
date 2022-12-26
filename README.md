@@ -1,5 +1,5 @@
-UK visa invitation letter generator.
-====================================
+UK visa invitation letter generator. ![PyPI](https://img.shields.io/pypi/v/uk-invitation-letter?style=flat-square)
+===
 
 Auto-generates UK tourist visa invitation letter.
 
@@ -8,22 +8,15 @@ Auto-generates UK tourist visa invitation letter.
 
 ### Requirements
 
-* Python 3
-* [tox](https://tox.wiki/en/latest/installation.html)
+* Python 3 with pip
 * LaTeX
 
 ### Usage
 
-1. Build the package:
+1. Install the package:
 
 ```bash
-tox
-```
-
-2. Install the package (you are encouraged to use a virtual environment):
-
-```bash
-pip install build/dist/uk-invitation-letter-0.0.0.tar.gz
+pip3 install uk-invitation-letter
 ```
 
 2. Create `data.yml` config file
