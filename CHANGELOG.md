@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.1 (2023-01-08)
+### Fix
+* Noop ([`9690b68`](https://github.com/iskhakovt/uk-invitation-letter/commit/9690b68ce9d8308123baa4495ffe5c49086953be))
+
 ## v0.2.0 (2023-01-08)
 ### Feature
 * Poetry dynamic versioning ([`21f5a63`](https://github.com/iskhakovt/uk-invitation-letter/commit/21f5a6354f47414c24ba8b009e5ed8b19954cefd))

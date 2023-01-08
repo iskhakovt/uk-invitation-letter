@@ -42,3 +42,4 @@ enable = true
 version_source = "tag_only"
 branch = "main"
 build_command = "poetry build"
+ignore_token_for_push = true
