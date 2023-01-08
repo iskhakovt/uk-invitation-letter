@@ -1,6 +1,6 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "uk-invitation-letter"
@@ -33,6 +33,9 @@ uk-invitation-letter = "invitation.builder:main"
 
 [tool.poetry.group.dev.dependencies]
 python-semantic-release = "^7.32.2"
+
+[tool.poetry-dynamic-versioning]
+enable = true
 
 [tool.semantic_release]
 version_source = "tag_only"
