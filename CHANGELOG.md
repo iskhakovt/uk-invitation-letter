@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.2 (2023-01-08)
+### Fix
+* Semantic release ignore_token_for_push ([`4f326a8`](https://github.com/iskhakovt/uk-invitation-letter/commit/4f326a826091a9d169b1719fa747169ae4d402f2))
+
 ## v0.2.1 (2023-01-08)
 ### Fix
 * Noop ([`9690b68`](https://github.com/iskhakovt/uk-invitation-letter/commit/9690b68ce9d8308123baa4495ffe5c49086953be))
