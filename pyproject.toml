@@ -37,3 +37,4 @@ python-semantic-release = "^7.32.2"
 [tool.semantic_release]
 version_source = "tag_only"
 branch = "main"
+build_command = "poetry build"
