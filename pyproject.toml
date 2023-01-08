@@ -14,7 +14,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Legal Industry",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Topic :: Text Processing :: Markup :: LaTeX",
