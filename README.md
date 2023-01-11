@@ -1,7 +1,7 @@
-UK visa invitation letter generator. ![PyPI](https://img.shields.io/pypi/v/uk-invitation-letter?style=flat-square)
+UK visa invitation letter generator [![PyPI](https://img.shields.io/pypi/v/uk-invitation-letter?style=flat-square)](https://pypi.org/project/uk-invitation-letter/)
 ===
 
-Auto-generates UK tourist visa invitation letter.
+Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitation letter for you.
 
 
 ---
@@ -13,13 +13,13 @@ Auto-generates UK tourist visa invitation letter.
 
 ### Usage
 
-1. Install the package:
+1. Install the package.
 
 ```bash
 pip3 install uk-invitation-letter
 ```
 
-2. Create `data.yml` config file
+2. Create `data.yml` config file.
 
 Example:
 
@@ -29,28 +29,29 @@ inviter: !entity
   address: !address
     lines:
       - 75 Hertingfordbury Road
-      - NEWTON NG13 8QY
+      - Newton NG13 8QY
       # UK auto-added
   phone: "07758888305"
-  email: slwzgtew2wj@temporary-mail.net
+  email: noreply@temporary-mail.net
 
 employer: !entity
   name: Jstory UK Ltd
   address: !address
     lines:
       - 89 Well Lane
-      - PATTERDALE CA11 0LQ
+      - Patterdale CA11 0LQ
 
 embassy: !entity
-  name: British Embassy Moscow
+  name: British Consulate General New York
   address: !address
     lines:
-      - Smolenskaya Naberezhnaya 10
-      - Moscow 121099
-      - Russian Federation
+      - 885 2nd Ave
+      - New York
+      - NY 10017
+      - United States
 
 invitee: !entity
-  name: # <first name> [<other names>]+ <last name>
+  name: # <first name> [<other names>]+ <last name>, use `~` for a non-breaking space
     - Joseph Brodsky
     - Maria Sozzani
   pronoun: null # they/them/their by default
@@ -61,11 +62,11 @@ trip: !trip
   departure_date: 2020-01-31
   reason: a short trip
   return_reason: null
-  return_country: Russia
+  return_country: the US
   financial_support: false
 ```
 
-3. Run the generator
+3. Run the generator.
 
 ```bash
 LATEX_BINARY=<path to latex binary> uk-invitation-letter
