@@ -9,8 +9,8 @@
 {% block addressor %}
 {{ inviter.full_name() }} \\
 {{ inviter.address.multiline() }} \\
-United~Kingdom \\
-{{ phone_format(inviter.phone) }} \\
+United~Kingdom \\[1ex]
+{{ phone_format(inviter.phone) }} \\[1ex]
 {{ inviter.email }} \\
 {% endblock %}
 
