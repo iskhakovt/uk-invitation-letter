@@ -9,7 +9,7 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 ### Requirements
 
 * Python 3 with pip
-* LaTeX
+* LaTeX with OpenType font support, e.g. XeLaTeX
 
 ### Usage
 
