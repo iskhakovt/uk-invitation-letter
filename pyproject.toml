@@ -32,9 +32,6 @@ PyYAML = "6.0.1"
 [tool.poetry.scripts]
 uk-invitation-letter = "invitation.builder:main"
 
-[tool.poetry.group.dev.dependencies]
-python-semantic-release = "^7.32.2"
-
 [tool.poetry-dynamic-versioning]
 enable = true
 
