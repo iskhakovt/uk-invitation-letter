@@ -1,0 +1,36 @@
+version: 2.1
+
+jobs:
+  publish:
+    docker:
+      - image: cimg/python:3.11.5
+    resource_class: medium
+    steps:
+      - checkout
+      - run: pip install poetry
+      - run: poetry publish --build
+
+  release:
+    docker:
+      - image: cimg/node:20.6.1
+    resource_class: small
+    steps:
+      - checkout
+      - run: npm i semantic-release@22.0.0 conventional-changelog-conventionalcommits@7.0.2
+      - run: npx semantic-release
+
+workflows:
+  ci:
+    jobs:
+      - release:
+          filters:
+            branches:
+              only: main
+  cd:
+    jobs:
+      - publish:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
