@@ -34,9 +34,6 @@ uk-invitation-letter = "invitation.builder:main"
 
 [tool.poetry-dynamic-versioning]
 enable = true
-
-[tool.semantic_release]
-version_source = "tag_only"
-branch = "main"
-build_command = "poetry build"
-ignore_token_for_push = true
+vcs = "git"
+style = "semver"
+dirty = true
