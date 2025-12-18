@@ -39,8 +39,9 @@ style = "semver"
 dirty = true
 
 [dependency-groups]
-test = [
-    "ruff (>=0.14.9,<0.15.0)"
+dev = [
+    "ruff (>=0.14.9,<0.15.0)",
+    "pyrefly (>=0.46.0,<0.47.0)"
 ]
 
 [tool.ruff]
@@ -50,3 +51,6 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "B"]
+
+[tool.pyrefly]
+python-version = "3.10"

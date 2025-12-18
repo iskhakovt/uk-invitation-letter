@@ -5,9 +5,9 @@ from collections.abc import Sequence
 import phonenumbers
 
 
-def and_join(strs: Sequence[str]) -> str | None:
+def and_join(strs: Sequence[str]) -> str:
     if not strs:
-        return None
+        return ""
     if len(strs) == 1:
         return strs[0]
     if len(strs) == 2:
