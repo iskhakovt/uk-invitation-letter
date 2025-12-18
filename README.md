@@ -13,17 +13,16 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 
 ### Usage
 
-1. Install the package.
-
+1. Install the package:
 ```bash
 pip3 install uk-invitation-letter
 ```
 
-2. Configure latexmk.
+2. Configure latexmk:
 
 You can use your default setup or clone `.latexmkrc`.
 
-3. Create `data.yml` config file.
+3. Create `data.yml` config file:
 
 Example:
 
@@ -33,10 +32,9 @@ inviter:
   address:
     - 75 Hertingfordbury Road
     - Newton NG13 8QY
-    # UK auto-added
   phone: "07758888305"
   email: noreply@temporary-mail.net
-  residence: share code  # permit / share code / passport / custom or null
+  residence: share code  # optional: `permit` / `share code` / `passport` / custom
   proof_of_address: council tax bill  # optional
 
 employer:
@@ -54,27 +52,27 @@ embassy:
     - United States
 
 invitee:
-  name: # <first name> [<other names>]+ <last name>, use `~` for a non-breaking space
+  name:  # <first name> [<other names>]+ <last name>, use `~` for a non-breaking space
     - Joseph Brodsky
     - Maria Sozzani
-  pronoun: null # they/them/their by default
+  pronoun: they/them/their  # optional, they/them/their by default
   relationship: friends
 
 trip:
-  arrival_date: 2020-01-01
-  departure_date: 2020-01-31
+  arrival_date: 2026-01-01
+  departure_date: 2026-01-31
   reason: a short trip  # optional
   return_reason: to circumnavigate the globe  # optional
   return_country: the US  # optional
   financial_support: false
-  docs:  # optional
-    - table tennis match result sheet
+
+docs:  # optional extra documents
+  - table tennis match result sheet
 ```
 
-4. Run the generator.
+4. Run the generator:
 
 ```bash
 uk-invitation-letter --data data.yml --output invitation.pdf
 ```
-
 The output will be saved to `invitation.pdf`.
