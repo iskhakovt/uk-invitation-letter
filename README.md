@@ -70,7 +70,7 @@ trip:
 4. Run the generator.
 
 ```bash
-uk-invitation-letter
+uk-invitation-letter --data data.yml --output invitation.pdf
 ```
 
-The output will be saved to `build/invitation.pdf`.
+The output will be saved to `invitation.pdf`.

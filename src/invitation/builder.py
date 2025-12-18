@@ -1,5 +1,7 @@
 import pathlib
+import shutil
 import subprocess
+import tempfile
 
 import jinja2
 from pydantic_yaml import parse_yaml_raw_as
@@ -8,9 +10,8 @@ from .model import InvitationConfig
 from .util import date_format, fix_floating_punctuation, phone_format
 
 
-def main() -> None:
-    with open("data.yml") as config_file:
-        config = parse_yaml_raw_as(InvitationConfig, config_file.read())
+def build(config_file: pathlib.Path, output_file: pathlib.Path) -> None:
+    config = parse_yaml_raw_as(InvitationConfig, config_file.read_text())
 
     template_env = jinja2.Environment(loader=jinja2.PackageLoader("invitation", "templates"))
     template = template_env.get_template("invitation.tex.jinja")
@@ -25,13 +26,10 @@ def main() -> None:
     )
     output_text = fix_floating_punctuation(output_text)
 
-    pathlib.Path("build").mkdir(exist_ok=True)
+    temp_dir = pathlib.Path(tempfile.mkdtemp())
+    tex_file = temp_dir / "invitation.tex"
 
-    with open("build/invitation.tex", "w") as output_file:
-        output_file.write(output_text)
+    tex_file.write_text(output_text)
+    subprocess.call(["latexmk", "-pdf", f"-output-directory={temp_dir.absolute()}", tex_file.absolute()])
 
-    subprocess.call(["latexmk", "-pdf", "-output-directory=build", "build/invitation.tex"])
-
-
-if __name__ == "__main__":
-    main()
+    shutil.move(temp_dir / "invitation.pdf", output_file)
