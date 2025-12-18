@@ -1,10 +1,11 @@
 import datetime
 import re
+from collections.abc import Sequence
 
 import phonenumbers
 
 
-def and_join(strs: list[str]) -> str | None:
+def and_join(strs: Sequence[str]) -> str | None:
     if not strs:
         return None
     if len(strs) == 1:
