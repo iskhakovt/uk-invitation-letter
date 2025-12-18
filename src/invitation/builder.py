@@ -28,8 +28,9 @@ def build(config_file: pathlib.Path, output_file: pathlib.Path) -> None:
 
     temp_dir = pathlib.Path(tempfile.mkdtemp())
     tex_file = temp_dir / "invitation.tex"
+    pdf_file = temp_dir / "invitation.pdf"
 
     tex_file.write_text(output_text)
     subprocess.call(["latexmk", "-pdf", f"-output-directory={temp_dir.absolute()}", tex_file.absolute()])
 
-    shutil.move(temp_dir / "invitation.pdf", output_file)
+    shutil.move(pdf_file, output_file)
