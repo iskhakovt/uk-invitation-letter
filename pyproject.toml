@@ -30,7 +30,7 @@ pydantic = "^2.12.5"
 pydantic-yaml = "^1.6.0"
 
 [tool.poetry.scripts]
-uk-invitation-letter = "invitation.builder:main"
+uk-invitation-letter = "invitation.main:main"
 
 [tool.poetry-dynamic-versioning]
 enable = true
