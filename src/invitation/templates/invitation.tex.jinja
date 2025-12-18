@@ -43,14 +43,23 @@ After {{ invitee.pronoun.get_determiner() }} trip to the UK, {{ invitee.name.sho
 We are aware of the coronavirus guidelines, and we will respect them and re-plan the trip if necessary.
 {% endif %}
 
+{% if employer %}
 I am currently employed at {{ employer.name.full_name() }}, {{ employer.address.line() }}.
+{% endif %}
 
 I have enclosed the following documents:
 \begin{itemize}
-\item residence permit;
-\item employment reference;
-{% if trip.financial_support %} \item latest payslip; {% endif %}
-\item proof of address\;(council tax bill).
+{% if inviter.residence == "permit" %} \item residence permit
+{% elif inviter.residence == "share code" %} \item immigration status share code
+{% elif inviter.residence == "passport" %} \item passport
+{% elif inviter.residence %} \item {{ inviter.residence }}
+{% endif %}
+{% if employer %} \item employment reference {% endif %}
+{% if trip.financial_support %} \item latest payslip {% endif %}
+{% if inviter.proof_of_address %} \item proof of address: {{ inviter.proof_of_address }} {% endif %}
+{% for doc in docs %}
+\item {{ doc }}
+{% endfor %}
 \end{itemize}
 
 Should you wish to discuss this application further, please do not hesitate to contact me.
