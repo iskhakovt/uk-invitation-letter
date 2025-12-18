@@ -34,8 +34,8 @@ inviter:
     - Newton NG13 8QY
   phone: "07758888305"
   email: noreply@temporary-mail.net
-  residence: share code  # permit / share code / passport / custom
-  proof_of_address: council tax bill
+  residence: share code  # optional: `permit` / `share code` / `passport` / custom
+  proof_of_address: council tax bill  # optional
 
 employer:
   name: Jstory UK Ltd
