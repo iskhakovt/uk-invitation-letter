@@ -36,7 +36,7 @@ inviter:
     # UK auto-added
   phone: "07758888305"
   email: noreply@temporary-mail.net
-  residence: share code  # permit / share code / passport / custom or none
+  residence: share code  # permit / share code / passport / custom or null
   proof_of_address: council tax bill  # optional
 
 employer:
@@ -64,7 +64,7 @@ trip:
   arrival_date: 2020-01-01
   departure_date: 2020-01-31
   reason: a short trip  # optional
-  return_reason: null  # optional
+  return_reason: to circumnavigate the globe  # optional
   return_country: the US  # optional
   financial_support: false
   docs:  # optional
