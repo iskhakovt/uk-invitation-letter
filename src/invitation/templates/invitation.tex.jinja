@@ -2,12 +2,12 @@
 
 
 {% block signature %}
-{{ inviter.full_name() }}
+{{ inviter.name.full_name() }}
 {% endblock %}
 
 
 {% block addressor %}
-{{ inviter.full_name() }} \\
+{{ inviter.name.full_name() }} \\
 {{ inviter.address.multiline() }} \\
 United~Kingdom \\[1ex]
 {{ phone_format(inviter.phone) }} \\[1ex]
@@ -16,7 +16,7 @@ United~Kingdom \\[1ex]
 
 
 {% block addressee %}
-{{ embassy.full_name() }} \\
+{{ embassy.name.full_name() }} \\
 {{ embassy.address.multiline() }}
 {% endblock %}
 
@@ -24,26 +24,26 @@ United~Kingdom \\[1ex]
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK visitor visa. {{ invitee.pronoun_subject().capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.name.full_name() }}, will apply for a UK visitor visa. {{ invitee.pronoun.get_subject().capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
-I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.address.line() }}.
+I am able to accommodate {{ invitee.name.short_name() }} at my place, {{ inviter.address.line() }}.
 {% if trip.financial_support %}
-{{ invitee.pronoun_subject().capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun_determiner() }} journey will be met by me.
+{{ invitee.pronoun.get_subject().capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun.get_determiner() }} journey will be met by me.
 {% else %}
-{{ invitee.pronoun_subject().capitalize() }} will use {{ invitee.pronoun_determiner() }} savings for the trip, and I will assist {{ invitee.pronoun_object() }} to cover any additional expenses.
+{{ invitee.pronoun.get_subject().capitalize() }} will use {{ invitee.pronoun.get_determiner() }} savings for the trip, and I will assist {{ invitee.pronoun.get_object() }} to cover any additional expenses.
 {% endif %}
 
-While in the UK, {{ invitee.pronoun_subject() }} will not engage in gainful employment.
+While in the UK, {{ invitee.pronoun.get_subject() }} will not engage in gainful employment.
 
 {% if trip.return_country or trip.return_reason %}
-After {{ invitee.pronoun_determiner() }} trip to the UK, {{ invitee.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
+After {{ invitee.pronoun.get_determiner() }} trip to the UK, {{ invitee.name.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
 {% endif %}
 
 {% if trip.covid %}
 We are aware of the coronavirus guidelines, and we will respect them and re-plan the trip if necessary.
 {% endif %}
 
-I am currently employed at {{ employer.full_name() }}, {{ employer.address.line() }}.
+I am currently employed at {{ employer.name.full_name() }}, {{ employer.address.line() }}.
 
 I have enclosed the following documents:
 \begin{itemize}

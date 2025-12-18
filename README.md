@@ -9,7 +9,7 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 ### Requirements
 
 * Python 3 with pip
-* LaTeX with OpenType font support, e.g. XeLaTeX
+* LaTeX with OpenType font support, e.g. XeLaTeX, and latexmk
 
 ### Usage
 
@@ -19,45 +19,46 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 pip3 install uk-invitation-letter
 ```
 
-2. Create `data.yml` config file.
+2. Configure latexmk.
+
+You can use your default setup or clone `.latexmkrc`.
+
+3. Create `data.yml` config file.
 
 Example:
 
 ```yaml
-inviter: !entity
+inviter:
   name: Kayleigh H Welch
-  address: !address
-    lines:
-      - 75 Hertingfordbury Road
-      - Newton NG13 8QY
-      # UK auto-added
+  address:
+    - 75 Hertingfordbury Road
+    - Newton NG13 8QY
+    # UK auto-added
   phone: "07758888305"
   email: noreply@temporary-mail.net
 
-employer: !entity
+employer:
   name: Jstory UK Ltd
-  address: !address
-    lines:
-      - 89 Well Lane
-      - Patterdale CA11 0LQ
+  address:
+    - 89 Well Lane
+    - Patterdale CA11 0LQ
 
-embassy: !entity
+embassy:
   name: British Consulate General New York
-  address: !address
-    lines:
-      - 885 2nd Ave
-      - New York
-      - NY 10017
-      - United States
+  address:
+    - 885 2nd Ave
+    - New York
+    - NY 10017
+    - United States
 
-invitee: !entity
+invitee:
   name: # <first name> [<other names>]+ <last name>, use `~` for a non-breaking space
     - Joseph Brodsky
     - Maria Sozzani
   pronoun: null # they/them/their by default
   relationship: friends
 
-trip: !trip
+trip:
   arrival_date: 2020-01-01
   departure_date: 2020-01-31
   reason: a short trip
@@ -66,10 +67,10 @@ trip: !trip
   financial_support: false
 ```
 
-3. Run the generator.
+4. Run the generator.
 
 ```bash
-LATEX_BINARY=<path to latex binary> uk-invitation-letter
+uk-invitation-letter
 ```
 
 The output will be saved to `build/invitation.pdf`.
