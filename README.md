@@ -9,7 +9,7 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 ### Requirements
 
 * Python 3 with pip
-* LaTeX with OpenType font support, e.g. XeLaTeX
+* LaTeX with OpenType font support, e.g. XeLaTeX, and latexmk
 
 ### Usage
 
@@ -19,7 +19,11 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 pip3 install uk-invitation-letter
 ```
 
-2. Create `data.yml` config file.
+2. Configure latexmk.
+
+You can use your default setup or clone `.latexmkrc`.
+
+3. Create `data.yml` config file.
 
 Example:
 
@@ -63,7 +67,7 @@ trip:
   financial_support: false
 ```
 
-3. Run the generator.
+4. Run the generator.
 
 ```bash
 uk-invitation-letter
