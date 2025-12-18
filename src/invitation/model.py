@@ -1,5 +1,4 @@
 import datetime
-from typing import Self
 
 from pydantic import BaseModel, RootModel, model_validator
 
@@ -9,18 +8,30 @@ from .util import and_join, use_non_breaking_space
 class Address(RootModel):
     root: list[str]
 
-    def __get_lines(self):
+    @model_validator(mode="after")
+    def check_not_empty(self) -> "Address":
+        if not self.root:
+            raise ValueError("Address must not be empty")
+        return self
+
+    def __get_lines(self) -> list[str]:
         return list(map(use_non_breaking_space, self.root))
 
-    def line(self):
+    def line(self) -> str:
         return ", ".join(self.__get_lines())
 
-    def multiline(self):
+    def multiline(self) -> str:
         return "\\\\\n".join(self.__get_lines())
 
 
 class Name(RootModel):
     root: str | list[str]
+
+    @model_validator(mode="after")
+    def check_not_empty(self) -> "Name":
+        if not self.root:
+            raise ValueError("Name must not be empty")
+        return self
 
     def __as_list(self) -> list[str]:
         return [self.root] if isinstance(self.root, str) else self.root
@@ -36,7 +47,7 @@ class Pronoun(RootModel):
     root: str | None = None
 
     @model_validator(mode="after")
-    def check_three_parts(self) -> Self:
+    def check_three_parts(self) -> "Pronoun":
         if self.root is not None and len(self.root.split("/")) != 3:
             raise ValueError("Pronouns must have three parts separated by `/`")
         return self
@@ -73,16 +84,10 @@ class Employer(BaseModel):
     name: Name
     address: Address
 
-    def full_name(self) -> str:
-        return self.name.full_name()
-
 
 class Embassy(BaseModel):
     name: Name
     address: Address
-
-    def full_name(self) -> str:
-        return self.name.full_name()
 
 
 class Trip(BaseModel):
