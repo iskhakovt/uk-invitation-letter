@@ -16,11 +16,7 @@ def build(config_file: pathlib.Path, output_file: pathlib.Path) -> None:
     template_env = jinja2.Environment(loader=jinja2.PackageLoader("invitation", "templates"))
     template = template_env.get_template("invitation.tex.jinja")
     output_text = template.render(
-        inviter=config.inviter,
-        invitee=config.invitee,
-        employer=config.employer,
-        embassy=config.embassy,
-        trip=config.trip,
+        **config.__dict__,
         date_format=date_format,
         phone_format=phone_format,
     )

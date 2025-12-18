@@ -59,6 +59,8 @@ class Inviter(BaseModel):
     address: Address
     phone: str
     email: str
+    residence: str | None = None
+    proof_of_address: str | None = None
 
 
 class Invitee(BaseModel):
@@ -95,6 +97,7 @@ class Trip(BaseModel):
 class InvitationConfig(BaseModel):
     inviter: Inviter
     invitee: Invitee
-    employer: Employer
+    employer: Employer | None = None
     embassy: Embassy
     trip: Trip
+    docs: list[str] = []
