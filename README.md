@@ -1,5 +1,4 @@
-UK visa invitation letter generator [![PyPI](https://img.shields.io/pypi/v/uk-invitation-letter?style=flat-square)](https://pypi.org/project/uk-invitation-letter/)
-===
+# UK visa invitation letter generator [![PyPI](https://img.shields.io/pypi/v/uk-invitation-letter?style=flat-square)](https://pypi.org/project/uk-invitation-letter/)
 
 Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitation letter for you.
 
