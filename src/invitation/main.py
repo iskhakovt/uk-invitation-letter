@@ -3,7 +3,7 @@ import pathlib
 import sys
 
 from .builder import ENGINES, build
-from .template import TEMPLATE_YAML
+from .template import load_template_yaml
 
 
 def main() -> None:
@@ -21,7 +21,7 @@ def main() -> None:
     if args.command == "render":
         build(args.data, args.output, args.engine)
     elif args.command == "gen":
-        sys.stdout.write(TEMPLATE_YAML)
+        sys.stdout.write(load_template_yaml())
 
 
 if __name__ == "__main__":

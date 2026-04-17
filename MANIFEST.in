@@ -1,1 +1,2 @@
 recursive-include src *.jinja
+recursive-include src *.yml
