@@ -1,0 +1,41 @@
+# Starter template for uk-invitation-letter.
+# Replace the sample values with your own data.
+
+inviter:
+  name: Your Name  # use `~` for a non-breaking space, e.g. `John~H~Smith`
+  address:
+    - 123 Example Street
+    - Example City EC1A 1AA
+  phone: "07700900000"
+  email: you@example.com
+  residence: share code  # optional: `permit` / `share code` / `passport` / custom
+  proof_of_address: council tax bill  # optional
+
+employer:  # optional — delete this block if not applicable
+  name: Example Employer Ltd
+  address:
+    - 1 Office Road
+    - Example City EC2A 2BB
+
+embassy:
+  name: British Embassy Example
+  address:
+    - 1 Embassy Square
+    - Example City
+    - Example Country
+
+invitee:
+  name:  # <first name> [<other names>]+ <last name>
+    - Invitee Name
+  pronoun: null  # optional, they/them/their by default; otherwise e.g. she/her/her
+  relationship: friend
+
+trip:
+  arrival_date: 2026-01-01
+  departure_date: 2026-01-15
+  reason: a short trip  # optional
+  return_reason: null  # optional
+  return_country: null  # optional
+  financial_support: false
+
+docs: []  # optional: list of extra documents to enclose

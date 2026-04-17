@@ -1,6 +1,7 @@
 import datetime
+from collections.abc import Sequence
 
-from pydantic import BaseModel, RootModel, model_validator
+from pydantic import BaseModel, Field, RootModel, model_validator
 
 from .util import and_join, use_non_breaking_space
 
@@ -14,14 +15,14 @@ class Address(RootModel):
             raise ValueError("Address must not be empty")
         return self
 
-    def __get_lines(self) -> list[str]:
-        return list(map(use_non_breaking_space, self.root))
+    def _lines(self) -> Sequence[str]:
+        return [use_non_breaking_space(line) for line in self.root]
 
     def line(self) -> str:
-        return ", ".join(self.__get_lines())
+        return ", ".join(self._lines())
 
     def multiline(self) -> str:
-        return "\\\\\n".join(self.__get_lines())
+        return "\\\\\n".join(self._lines())
 
 
 class Name(RootModel):
@@ -33,14 +34,14 @@ class Name(RootModel):
             raise ValueError("Name must not be empty")
         return self
 
-    def __as_list(self) -> list[str]:
+    def _as_sequence(self) -> Sequence[str]:
         return [self.root] if isinstance(self.root, str) else self.root
 
     def full_name(self) -> str:
-        return and_join(list(map(use_non_breaking_space, self.__as_list())))
+        return and_join([use_non_breaking_space(name) for name in self._as_sequence()])
 
     def short_name(self) -> str:
-        return and_join(list(map(lambda name: name.split(" ")[0], self.__as_list())))
+        return and_join([name.split(" ")[0] for name in self._as_sequence()])
 
 
 class Pronoun(RootModel):
@@ -52,17 +53,20 @@ class Pronoun(RootModel):
             raise ValueError("Pronouns must have three parts separated by `/`")
         return self
 
-    def __get_pronoun_part(self, idx: int, default: str) -> str:
+    def _part(self, idx: int, default: str) -> str:
         return self.root.split("/")[idx] if self.root else default
 
-    def get_subject(self) -> str:
-        return self.__get_pronoun_part(0, "they")
+    @property
+    def subject(self) -> str:
+        return self._part(0, "they")
 
-    def get_object(self) -> str:
-        return self.__get_pronoun_part(1, "them")
+    @property
+    def object(self) -> str:
+        return self._part(1, "them")
 
-    def get_determiner(self) -> str:
-        return self.__get_pronoun_part(2, "their")
+    @property
+    def determiner(self) -> str:
+        return self._part(2, "their")
 
 
 class Inviter(BaseModel):
@@ -76,7 +80,7 @@ class Inviter(BaseModel):
 
 class Invitee(BaseModel):
     name: Name
-    pronoun: Pronoun = Pronoun()
+    pronoun: Pronoun = Field(default_factory=Pronoun)
     relationship: str
 
 
@@ -105,4 +109,4 @@ class InvitationConfig(BaseModel):
     employer: Employer | None = None
     embassy: Embassy
     trip: Trip
-    docs: list[str] = []
+    docs: tuple[str, ...] = ()

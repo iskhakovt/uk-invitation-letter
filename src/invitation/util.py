@@ -11,7 +11,7 @@ def and_join(strs: Sequence[str]) -> str:
     if len(strs) == 1:
         return strs[0]
     if len(strs) == 2:
-        return "{} and {}".format(strs[0], strs[1])
+        return f"{strs[0]} and {strs[1]}"
     return ", ".join(strs[:-1]) + ", and~" + strs[-1]
 
 
@@ -26,8 +26,8 @@ def phone_format(phone: str) -> str:
 
 
 def fix_floating_punctuation(s: str) -> str:
-    return re.sub(r" +([^\w\s])", r"\g<1>", s)
+    return re.sub(r" +([,.;:!?])", r"\g<1>", s)
 
 
 def use_non_breaking_space(s: str) -> str:
-    return re.sub(" ", "~", s)
+    return s.replace(" ", "~")
