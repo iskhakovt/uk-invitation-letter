@@ -23,23 +23,19 @@
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I would like to confirm that my {{ invitee.relationship }}, {{ invitee.name.full_name() }}, will apply for a UK visitor visa. {{ invitee.pronoun.get_subject().capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.name.full_name() }}, will apply for a UK visitor visa. {{ invitee.pronoun.subject.capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
 I am able to accommodate {{ invitee.name.short_name() }} at my place, {{ inviter.address.line() }}.
 {% if trip.financial_support %}
-{{ invitee.pronoun.get_subject().capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun.get_determiner() }} journey will be met by me.
+{{ invitee.pronoun.subject.capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun.determiner }} journey will be met by me.
 {% else %}
-{{ invitee.pronoun.get_subject().capitalize() }} will use {{ invitee.pronoun.get_determiner() }} savings for the trip, and I will assist {{ invitee.pronoun.get_object() }} to cover any additional expenses.
+{{ invitee.pronoun.subject.capitalize() }} will use {{ invitee.pronoun.determiner }} savings for the trip, and I will assist {{ invitee.pronoun.object }} to cover any additional expenses.
 {% endif %}
 
-While in the UK, {{ invitee.pronoun.get_subject() }} will not engage in gainful employment.
+While in the UK, {{ invitee.pronoun.subject }} will not engage in gainful employment.
 
 {% if trip.return_country or trip.return_reason %}
-After {{ invitee.pronoun.get_determiner() }} trip to the UK, {{ invitee.name.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
-{% endif %}
-
-{% if trip.covid %}
-We are aware of the coronavirus guidelines, and we will respect them and re-plan the trip if necessary.
+After {{ invitee.pronoun.determiner }} trip to the UK, {{ invitee.name.short_name() }} will {% if trip.return_country %} return to {{ trip.return_country }}{% else %} leave the UK {% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
 {% endif %}
 
 {% if employer %}

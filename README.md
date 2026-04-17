@@ -8,21 +8,16 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 
 ### Requirements
 
-* Python 3 with pip
+* Python 3 with [pipx](https://pipx.pypa.io/)
 * LaTeX with OpenType font support, e.g. XeLaTeX, and latexmk
 
 ### Usage
 
-1. Install the package:
+1. Create a `data.yml` config file. Generate a starting template with:
+
 ```bash
-pip3 install uk-invitation-letter
+pipx run uk-invitation-letter gen > data.yml
 ```
-
-2. Configure latexmk:
-
-You can use your default setup or clone `.latexmkrc`.
-
-3. Create `data.yml` config file:
 
 Example:
 
@@ -70,9 +65,12 @@ docs:  # optional extra documents
   - table tennis match result sheet
 ```
 
-4. Run the generator:
+2. Render the letter:
 
 ```bash
-uk-invitation-letter --data data.yml --output invitation.pdf
+pipx run uk-invitation-letter render --data data.yml --output invitation.pdf
 ```
-The output will be saved to `invitation.pdf`.
+
+The output will be saved to `invitation.pdf`. Pass `--engine lualatex` if you prefer LuaLaTeX (default is XeLaTeX).
+
+For repeated use, install it once with `pipx install uk-invitation-letter` and then invoke `uk-invitation-letter render ...` directly.
