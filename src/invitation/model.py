@@ -1,5 +1,6 @@
 import datetime
 from collections.abc import Sequence
+from typing import Self
 
 from pydantic import BaseModel, Field, RootModel, model_validator
 
@@ -10,7 +11,7 @@ class Address(RootModel):
     root: list[str]
 
     @model_validator(mode="after")
-    def check_not_empty(self) -> "Address":
+    def check_not_empty(self) -> Self:
         if not self.root:
             raise ValueError("Address must not be empty")
         return self
@@ -29,7 +30,7 @@ class Name(RootModel):
     root: str | list[str]
 
     @model_validator(mode="after")
-    def check_not_empty(self) -> "Name":
+    def check_not_empty(self) -> Self:
         if not self.root:
             raise ValueError("Name must not be empty")
         return self
@@ -48,7 +49,7 @@ class Pronoun(RootModel):
     root: str | None = None
 
     @model_validator(mode="after")
-    def check_three_parts(self) -> "Pronoun":
+    def check_three_parts(self) -> Self:
         if self.root is not None and len(self.root.split("/")) != 3:
             raise ValueError("Pronouns must have three parts separated by `/`")
         return self

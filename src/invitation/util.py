@@ -16,7 +16,7 @@ def and_join(strs: Sequence[str]) -> str:
 
 
 def date_format(date: datetime.date) -> str:
-    return date.strftime("%-d~%B~%Y")
+    return f"{date.day}~{date:%B~%Y}"
 
 
 def phone_format(phone: str) -> str:

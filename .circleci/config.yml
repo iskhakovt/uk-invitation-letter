@@ -1,14 +1,30 @@
 version: 2.1
 
 jobs:
+  test:
+    parameters:
+      python-version:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
+    resource_class: medium
+    steps:
+      - checkout
+      - run: pip install uv==0.9.25
+      - run: uv sync --python << parameters.python-version >>
+      - run: uv run ruff check
+      - run: uv run pyrefly check
+      - run: uv run pytest
+
   publish:
     docker:
       - image: cimg/python:3.14
     resource_class: medium
     steps:
       - checkout
-      - run: pip install poetry==2.2.1 poetry-dynamic-versioning==1.9.1
-      - run: poetry publish --build
+      - run: pip install uv==0.9.25
+      - run: uv build
+      - run: uv publish
 
   release:
     docker:
@@ -22,13 +38,30 @@ jobs:
 workflows:
   ci:
     jobs:
+      - test:
+          matrix:
+            parameters:
+              python-version: ["3.11", "3.14"]
       - release:
+          requires:
+            - test
           filters:
             branches:
               only: main
   cd:
     jobs:
+      - test:
+          matrix:
+            parameters:
+              python-version: ["3.11", "3.14"]
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
       - publish:
+          requires:
+            - test
           filters:
             tags:
               only: /.*/
