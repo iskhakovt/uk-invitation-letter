@@ -10,7 +10,7 @@ jobs:
     resource_class: medium
     steps:
       - checkout
-      - run: pip install uv==0.9.25
+      - run: pip install uv==0.11.7
       - run: uv sync --python << parameters.python-version >>
       - run: uv run ruff check
       - run: uv run pyrefly check
@@ -22,7 +22,7 @@ jobs:
     resource_class: medium
     steps:
       - checkout
-      - run: pip install uv==0.9.25
+      - run: pip install uv==0.11.7
       - run: uv build
       - run: uv publish
 
