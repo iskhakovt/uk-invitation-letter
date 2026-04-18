@@ -15,8 +15,17 @@ def and_join(strs: Sequence[str]) -> str:
     return ", ".join(strs[:-1]) + ", and~" + strs[-1]
 
 
+# Hard-coded so month names don't depend on the host's LC_TIME (strftime("%B")
+# is locale-coupled). Babel would solve it with CLDR data but costs ~10 MB for
+# one locale — the product only ever emits British English.
+_MONTHS = (
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+)
+
+
 def date_format(date: datetime.date) -> str:
-    return f"{date.day}~{date:%B~%Y}"
+    return f"{date.day}~{_MONTHS[date.month - 1]}~{date.year}"
 
 
 def phone_format(phone: str) -> str:
