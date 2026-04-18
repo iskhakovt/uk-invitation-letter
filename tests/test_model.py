@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -59,7 +60,7 @@ class TestPronoun:
 
 
 class TestInvitationConfig:
-    def _minimal(self) -> dict:
+    def _minimal(self) -> dict[str, Any]:
         return {
             "inviter": {
                 "name": "Alice Smith",
