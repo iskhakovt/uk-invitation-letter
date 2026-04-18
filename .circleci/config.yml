@@ -80,8 +80,7 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - run: npm i semantic-release@25.0.2 conventional-changelog-conventionalcommits@9.1.0
-      - run: npx semantic-release
+      - run: npx -y -p semantic-release@25.0.3 -p conventional-changelog-conventionalcommits@9.3.1 semantic-release
 
 workflows:
   ci:

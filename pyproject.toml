@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.27", "uv-dynamic-versioning>=0.8"]
+requires = ["hatchling>=1.29", "uv-dynamic-versioning>=0.14"]
 build-backend = "hatchling.build"
 
 [project]
@@ -12,8 +12,8 @@ readme = "README.md"
 requires-python = ">=3.11,<4"
 dependencies = [
     "Jinja2>=3.1.6,<4",
-    "phonenumbers>=9.0.21,<10",
-    "pydantic>=2.12.5,<3",
+    "phonenumbers>=9.0.28,<10",
+    "pydantic>=2.13.2,<3",
     "pydantic-yaml>=1.6.0,<2",
 ]
 classifiers = [
@@ -33,9 +33,9 @@ uk-invitation-letter = "invitation.main:main"
 
 [dependency-groups]
 dev = [
-    "ruff>=0.14.9,<0.15.0",
-    "pyrefly>=0.46.0,<0.47.0",
-    "pytest>=8.3,<10",
+    "ruff>=0.15.11,<0.16.0",
+    "pyrefly>=0.61.1,<0.62.0",
+    "pytest>=9.0.3,<10",
 ]
 
 [tool.hatch.version]
