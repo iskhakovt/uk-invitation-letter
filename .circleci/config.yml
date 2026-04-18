@@ -10,7 +10,7 @@ jobs:
         type: string
     docker:
       - image: cimg/python:<< parameters.python-version >>
-    resource_class: medium
+    resource_class: small
     steps:
       - checkout
       - python/install-packages:
@@ -23,7 +23,7 @@ jobs:
   publish:
     docker:
       - image: cimg/python:3.14
-    resource_class: medium
+    resource_class: small
     steps:
       - checkout
       - run: uv build
