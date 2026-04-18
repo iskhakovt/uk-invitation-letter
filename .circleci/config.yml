@@ -18,7 +18,54 @@ jobs:
           args: --python << parameters.python-version >>
       - run: uv run ruff check
       - run: uv run pyrefly check
-      - run: uv run pytest
+      - run: uv run pytest -m "not render"
+
+  render-test:
+    docker:
+      - image: texlive/texlive:latest-small
+    resource_class: small
+    environment:
+      INVITATION_RENDER_TEST_REQUIRED: "1"
+      TEXMFHOME: /root/texmf
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - texmf-v1
+      - run:
+          name: Install LaTeX packages via tlmgr (cache miss only)
+          command: |
+            if [ ! -f /root/texmf/tex/latex/garamond-libre/garamondlibre.sty ]; then
+              REPO=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
+              tlmgr --repository "$REPO" init-usertree
+              tlmgr --repository "$REPO" --usermode --usertree /root/texmf install garamond-libre isodate substr
+            fi
+      - save_cache:
+          key: texmf-v1
+          paths:
+            - /root/texmf
+      - run:
+          name: Install diff-pdf and curl
+          command: |
+            apt-get update -qq
+            apt-get install -y -qq --no-install-recommends diff-pdf-wx ca-certificates curl
+      - run:
+          name: Install uv
+          command: |
+            curl -LsSf https://astral.sh/uv/0.11.7/install.sh | sh
+            echo 'export PATH=$HOME/.local/bin:$PATH' >> "$BASH_ENV"
+      - restore_cache:
+          keys:
+            - uv-v1-{{ checksum "uv.lock" }}
+            - uv-v1-
+      - run: uv sync
+      - save_cache:
+          key: uv-v1-{{ checksum "uv.lock" }}
+          paths:
+            - /root/.cache/uv
+      - run: uv run pytest -m render
+      - store_artifacts:
+          path: tests/_artifacts
 
   publish:
     docker:
@@ -45,9 +92,11 @@ workflows:
           matrix:
             parameters:
               python-version: ["3.11", "3.14"]
+      - render-test
       - release:
           requires:
             - test
+            - render-test
           filters:
             branches:
               only: main
@@ -62,9 +111,17 @@ workflows:
               only: /.*/
             branches:
               ignore: /.*/
+      - render-test:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
       - publish:
+          context: pypi-public
           requires:
             - test
+            - render-test
           filters:
             tags:
               only: /.*/
