@@ -69,7 +69,7 @@ python-version = "3.11"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--import-mode=importlib --strict-markers"
+addopts = "--import-mode=importlib --strict-markers -m 'not render'"
 markers = [
     "render: end-to-end PDF render test (requires latexmk, xelatex, diff-pdf)",
 ]

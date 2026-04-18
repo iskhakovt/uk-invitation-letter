@@ -18,14 +18,13 @@ jobs:
           args: --python << parameters.python-version >>
       - run: uv run ruff check
       - run: uv run pyrefly check
-      - run: uv run pytest -m "not render"
+      - run: uv run pytest
 
   render-test:
     docker:
       - image: texlive/texlive:latest-small
     resource_class: small
     environment:
-      INVITATION_RENDER_TEST_REQUIRED: "1"
       TEXMFHOME: /root/texmf
     steps:
       - checkout

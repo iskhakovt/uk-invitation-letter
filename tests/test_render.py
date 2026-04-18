@@ -1,4 +1,3 @@
-import os
 import pathlib
 import re
 import shutil
@@ -23,15 +22,6 @@ def _readme_example_yaml() -> str:
     return blocks[0]
 
 
-def _require(tool: str) -> None:
-    if shutil.which(tool) is not None:
-        return
-    msg = f"{tool} not installed"
-    if os.environ.get("INVITATION_RENDER_TEST_REQUIRED") == "1":
-        pytest.fail(msg)
-    pytest.skip(msg)
-
-
 @pytest.fixture
 def example_data_file(tmp_path: pathlib.Path) -> pathlib.Path:
     data = tmp_path / "data.yml"
@@ -46,10 +36,10 @@ def test_render_matches_baseline(
     record_baselines: bool,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _require("latexmk")
-    _require("xelatex")
+    assert shutil.which("latexmk"), "latexmk not installed"
+    assert shutil.which("xelatex"), "xelatex not installed"
     if not record_baselines:
-        _require("diff-pdf")
+        assert shutil.which("diff-pdf"), "diff-pdf not installed"
 
     monkeypatch.setenv("SOURCE_DATE_EPOCH", "0")
     monkeypatch.setenv("FORCE_SOURCE_DATE", "1")
