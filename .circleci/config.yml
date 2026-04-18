@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  python: circleci/python@4.0.0
+
 jobs:
   test:
     parameters:
@@ -10,8 +13,9 @@ jobs:
     resource_class: medium
     steps:
       - checkout
-      - run: pip install uv==0.11.7
-      - run: uv sync --python << parameters.python-version >>
+      - python/install-packages:
+          pkg-manager: uv
+          args: --python << parameters.python-version >>
       - run: uv run ruff check
       - run: uv run pyrefly check
       - run: uv run pytest
@@ -22,7 +26,6 @@ jobs:
     resource_class: medium
     steps:
       - checkout
-      - run: pip install uv==0.11.7
       - run: uv build
       - run: uv publish
 
