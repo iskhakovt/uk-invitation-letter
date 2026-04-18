@@ -30,17 +30,16 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - texmf-v1
+            - texmf-v1-{{ checksum ".circleci/texlive-packages.txt" }}
+            - texmf-v1-
       - run:
-          name: Install LaTeX packages via tlmgr (cache miss only)
+          name: Install LaTeX packages via tlmgr
           command: |
-            if [ ! -f /root/texmf/tex/latex/garamond-libre/garamondlibre.sty ]; then
-              REPO=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
-              tlmgr --repository "$REPO" init-usertree
-              tlmgr --repository "$REPO" --usermode --usertree /root/texmf install garamond-libre isodate substr
-            fi
+            REPO=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
+            [ -d /root/texmf ] || tlmgr --repository "$REPO" init-usertree
+            tlmgr --repository "$REPO" --usermode --usertree /root/texmf install $(cat .circleci/texlive-packages.txt)
       - save_cache:
-          key: texmf-v1
+          key: texmf-v1-{{ checksum ".circleci/texlive-packages.txt" }}
           paths:
             - /root/texmf
       - run:
