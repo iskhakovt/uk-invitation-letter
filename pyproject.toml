@@ -34,7 +34,7 @@ uk-invitation-letter = "invitation.main:main"
 [dependency-groups]
 dev = [
     "ruff>=0.15.11,<0.16.0",
-    "pyrefly>=0.61.1,<0.62.0",
+    "pyrefly>=0.61.1,<0.64.0",
     "pytest>=9.0.3,<10",
 ]
 
