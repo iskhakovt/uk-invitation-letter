@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from invitation.model import Address, InvitationConfig, Name, Pronoun
+from invitation.model import Address, InvitationConfig, Name, Pronoun, Trip
 
 
 class TestAddress:
@@ -84,4 +84,60 @@ class TestInvitationConfig:
         data = self._minimal()
         del data["embassy"]
         with pytest.raises(ValidationError):
+            InvitationConfig(**data)
+
+
+class TestWhitespaceAndBlanks:
+    def test_name_is_stripped(self) -> None:
+        assert Name("  Alice Smith ").short_name() == "Alice"
+
+    def test_blank_name_parts_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            Name([""])
+        with pytest.raises(ValidationError):
+            Name("   ")
+
+    def test_blank_address_line_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            Address([" "])
+
+    def test_pronoun_parts_are_stripped(self) -> None:
+        p = Pronoun(" she / her / her ")
+        assert (p.subject, p.object, p.determiner) == ("she", "her", "her")
+
+    def test_pronoun_blank_part_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            Pronoun("//")
+
+    def test_blank_optional_text_rejected(self) -> None:
+        data = TestInvitationConfig()._minimal()
+        data["trip"]["reason"] = ""
+        with pytest.raises(ValidationError):
+            InvitationConfig(**data)
+
+
+class TestEscaping:
+    def test_name_methods_escape(self) -> None:
+        name = Name(["Marks & Spencer", "Bob_Jones"])
+        assert name.full_name() == "Marks~\\&~Spencer and Bob\\_Jones"
+        assert name.short_name() == "Marks and Bob\\_Jones"
+
+    def test_address_methods_escape(self) -> None:
+        addr = Address(["Flat #3", "100% Street"])
+        assert addr.line() == "Flat~\\#3, 100\\%~Street"
+        assert addr.multiline() == "Flat~\\#3\\\\\n100\\%~Street"
+
+
+class TestValidation:
+    def test_departure_before_arrival_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="must not be before"):
+            Trip(arrival_date=datetime.date(2026, 1, 31), departure_date=datetime.date(2026, 1, 1))
+
+    def test_same_day_trip_allowed(self) -> None:
+        Trip(arrival_date=datetime.date(2026, 1, 1), departure_date=datetime.date(2026, 1, 1))
+
+    def test_invalid_phone_rejected(self) -> None:
+        data = TestInvitationConfig()._minimal()
+        data["inviter"]["phone"] = "0775"
+        with pytest.raises(ValidationError, match="not a possible phone number"):
             InvitationConfig(**data)

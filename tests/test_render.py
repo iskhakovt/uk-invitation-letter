@@ -1,5 +1,4 @@
 import pathlib
-import re
 import shutil
 import subprocess
 
@@ -8,25 +7,9 @@ import pytest
 from invitation.builder import build
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent
-README = REPO_ROOT / "README.md"
 FIXTURE_DIR = pathlib.Path(__file__).parent / "fixtures" / "render"
 BASELINE_PDF = FIXTURE_DIR / "baseline.pdf"
 ARTIFACT_DIR = REPO_ROOT / "tests" / "_artifacts" / "render"
-
-
-def _readme_example_yaml() -> str:
-    text = README.read_text(encoding="utf-8")
-    blocks = re.findall(r"```yaml\n(.*?)\n```", text, re.DOTALL)
-    if len(blocks) != 1:
-        raise AssertionError(f"expected exactly one yaml block in README, found {len(blocks)}")
-    return blocks[0]
-
-
-@pytest.fixture
-def example_data_file(tmp_path: pathlib.Path) -> pathlib.Path:
-    data = tmp_path / "data.yml"
-    data.write_text(_readme_example_yaml(), encoding="utf-8")
-    return data
 
 
 @pytest.mark.render
@@ -72,7 +55,5 @@ def test_render_matches_baseline(
     shutil.copyfile(actual, ARTIFACT_DIR / "actual.pdf")
     shutil.copyfile(BASELINE_PDF, ARTIFACT_DIR / "expected.pdf")
     pytest.fail(
-        f"rendered PDF differs from baseline\n"
-        f"  artifacts: {ARTIFACT_DIR}\n"
-        f"  diff-pdf stderr: {result.stderr.strip()}"
+        f"rendered PDF differs from baseline\n  artifacts: {ARTIFACT_DIR}\n  diff-pdf stderr: {result.stderr.strip()}"
     )

@@ -1,12 +1,15 @@
 import argparse
 import pathlib
 import sys
+from collections.abc import Sequence
 
-from .builder import ENGINES, build
+from pydantic import ValidationError
+
+from .builder import ENGINES, BuildError, build
 from .template import load_template_yaml
 
 
-def main() -> None:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="uk-invitation-letter", description="Generate a UK invitation letter")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -17,12 +20,20 @@ def main() -> None:
 
     subparsers.add_parser("gen", help="Print a template data.yml to stdout")
 
-    args = parser.parse_args()
-    if args.command == "render":
-        build(args.data, args.output, args.engine)
-    elif args.command == "gen":
-        sys.stdout.write(load_template_yaml())
+    args = parser.parse_args(argv)
+    try:
+        if args.command == "render":
+            build(args.data, args.output, args.engine)
+        elif args.command == "gen":
+            sys.stdout.write(load_template_yaml())
+    except ValidationError as e:
+        print(f"error: {args.data} is not a valid data file:\n{e}", file=sys.stderr)
+        return 1
+    except (BuildError, OSError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

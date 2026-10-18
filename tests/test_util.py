@@ -3,10 +3,13 @@ import datetime
 import pytest
 
 from invitation.util import (
+    Tex,
     and_join,
     date_format,
     fix_floating_punctuation,
+    parse_phone,
     phone_format,
+    tex_escape,
     use_non_breaking_space,
 )
 
@@ -68,3 +71,33 @@ class TestFixFloatingPunctuation:
 
     def test_collapses_multiple_spaces_before_punct(self) -> None:
         assert fix_floating_punctuation("word   ,") == "word,"
+
+
+class TestTexEscape:
+    def test_escapes_all_specials(self) -> None:
+        assert tex_escape(r"a&b%c$d#e_f{g}h^i\j") == r"a\&b\%c\$d\#e\_f\{g\}h\textasciicircum{}i\textbackslash{}j"
+
+    def test_backslash_is_not_double_escaped(self) -> None:
+        assert tex_escape("\\&") == r"\textbackslash{}\&"
+
+    def test_keeps_tilde(self) -> None:
+        assert tex_escape("John~Smith") == "John~Smith"
+
+    def test_returns_tex_and_is_idempotent_on_tex(self) -> None:
+        once = tex_escape("50%")
+        assert isinstance(once, Tex)
+        assert tex_escape(once) == once == r"50\%"
+
+
+class TestParsePhone:
+    def test_invalid_number(self) -> None:
+        with pytest.raises(ValueError, match="not a possible phone number"):
+            parse_phone("0775")
+
+    def test_not_a_number(self) -> None:
+        with pytest.raises(ValueError, match="not a phone number"):
+            parse_phone("call me")
+
+    def test_phone_format_rejects_garbage(self) -> None:
+        with pytest.raises(ValueError):
+            phone_format("call me")
