@@ -34,6 +34,14 @@ _TEMPLATE_ENV: Final[jinja2.Environment] = jinja2.Environment(
 )
 
 
+def _format_validation_error(e: ValidationError) -> str:
+    lines = []
+    for error in e.errors():
+        location = ".".join(str(part) for part in error["loc"]) or "(top level)"
+        lines.append(f"  {location}: {error['msg']}")
+    return "\n".join(lines)
+
+
 def load_config(config_file: pathlib.Path) -> InvitationConfig:
     """Read and validate a data file. Raises BuildError for anything other than an unreadable file."""
     try:
@@ -42,8 +50,10 @@ def load_config(config_file: pathlib.Path) -> InvitationConfig:
         raise BuildError(f"{config_file} is not UTF-8 encoded: {e}") from e
     try:
         return parse_yaml_raw_as(InvitationConfig, text)
-    except (YAMLError, ValidationError) as e:
-        raise BuildError(f"{config_file} is not a valid data file:\n{e}") from e
+    except YAMLError as e:
+        raise BuildError(f"{config_file} is not valid YAML:\n{e}") from e
+    except ValidationError as e:
+        raise BuildError(f"{config_file} is not a valid data file:\n{_format_validation_error(e)}") from e
 
 
 def render_tex(config: InvitationConfig) -> str:
@@ -64,8 +74,9 @@ def render_tex(config: InvitationConfig) -> str:
 
 def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xelatex") -> None:
     """Compile LaTeX source with latexmk and move the resulting PDF to `output_file`."""
-    if shutil.which("latexmk") is None:
-        raise BuildError(f"latexmk not found on PATH; install a TeX distribution that provides latexmk and {engine}")
+    for tool in ("latexmk", engine):
+        if shutil.which(tool) is None:
+            raise BuildError(f"{tool} not found on PATH; install a TeX distribution that provides latexmk and {engine}")
 
     with tempfile.TemporaryDirectory() as temp_dir_name:
         temp_dir = pathlib.Path(temp_dir_name)

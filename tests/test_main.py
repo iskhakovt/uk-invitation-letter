@@ -32,7 +32,7 @@ def test_render_malformed_yaml(tmp_path: pathlib.Path, capsys: pytest.CaptureFix
     data = tmp_path / "data.yml"
     data.write_text("inviter: [\n  bad: {\n", encoding="utf-8")
     assert main(["render", "--data", str(data), "--output", str(tmp_path / "out.pdf")]) == 1
-    assert "is not a valid data file" in capsys.readouterr().err
+    assert "is not valid YAML" in capsys.readouterr().err
 
 
 def test_render_non_utf8_data_file(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:

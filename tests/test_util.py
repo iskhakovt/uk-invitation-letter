@@ -10,6 +10,7 @@ from invitation.util import (
     parse_phone,
     phone_format,
     tex_escape,
+    tex_nobreak,
     use_non_breaking_space,
 )
 
@@ -80,8 +81,25 @@ class TestTexEscape:
     def test_backslash_is_not_double_escaped(self) -> None:
         assert tex_escape("\\&") == r"\textbackslash{}\&"
 
-    def test_keeps_tilde(self) -> None:
-        assert tex_escape("John~Smith") == "John~Smith"
+    def test_escapes_tilde(self) -> None:
+        assert tex_escape("~2 weeks") == r"\textasciitilde{}2 weeks"
+
+    def test_refuses_case_transformations(self) -> None:
+        with pytest.raises(TypeError, match="before escaping"):
+            tex_escape("a&b").capitalize()
+        with pytest.raises(TypeError):
+            tex_escape("a&b").upper()
+
+
+class TestTexNobreak:
+    def test_spaces_become_non_breaking_and_specials_are_escaped(self) -> None:
+        assert tex_nobreak("Marks & Spencer plc") == r"Marks~\&~Spencer~plc"
+
+    def test_typed_tilde_is_kept(self) -> None:
+        assert tex_nobreak("Mary~Ann Smith") == "Mary~Ann~Smith"
+
+    def test_returns_tex(self) -> None:
+        assert isinstance(tex_nobreak("x"), Tex)
 
     def test_returns_tex_and_is_idempotent_on_tex(self) -> None:
         once = tex_escape("50%")

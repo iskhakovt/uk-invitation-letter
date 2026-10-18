@@ -1,11 +1,9 @@
 import pathlib
 import re
-from typing import Final
 
 import pytest
 
-REPO_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parent.parent
-README: Final[pathlib.Path] = REPO_ROOT / "README.md"
+from tests.data import README
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

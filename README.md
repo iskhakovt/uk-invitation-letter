@@ -72,6 +72,6 @@ pipx run uk-invitation-letter render --data data.yml --output invitation.pdf
 
 The output will be saved to `invitation.pdf`. Pass `--engine lualatex` if you prefer LuaLaTeX (default is XeLaTeX).
 
-Text from the data file is escaped for LaTeX automatically, so `&`, `%`, `#`, `_` and friends render literally. Spaces inside names and address lines never break across lines. The one exception is `~`, which stands for a non-breaking space: write `Mary~Ann Smith` so the short form of the name stays "Mary~Ann" rather than "Mary".
+Text from the data file is escaped for LaTeX automatically, so `&`, `%`, `#`, `_`, `~` and friends render literally. Names and address lines are never broken across lines. In those fields only, a `~` you type is kept as a non-breaking space: write `Mary~Ann Smith` so the short form of the name stays "Mary~Ann" rather than "Mary".
 
 For repeated use, install it once with `pipx install uk-invitation-letter` and then invoke `uk-invitation-letter render ...` directly.

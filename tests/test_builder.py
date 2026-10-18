@@ -8,10 +8,9 @@ from pydantic_yaml import parse_yaml_raw_as
 
 from invitation.builder import BuildError, compile_pdf, load_config, render_tex
 from invitation.model import InvitationConfig
-from tests.data import MINIMAL_DATA
+from tests.data import INVITER, MINIMAL_DATA, TRIP
 
 RAW_SPECIALS: Final[re.Pattern[str]] = re.compile(r"(?<!\\)[&%#_$]")  # an unescaped LaTeX special in rendered body text
-TRIP: Final[Mapping[str, object]] = {"arrival_date": "2026-01-01", "departure_date": "2026-01-10"}
 
 
 def render(data: Mapping[str, object]) -> str:
@@ -41,14 +40,20 @@ class TestLoadConfig:
     def test_malformed_yaml(self, tmp_path: pathlib.Path) -> None:
         data = tmp_path / "data.yml"
         data.write_text("inviter: [\n  bad: {\n", encoding="utf-8")
-        with pytest.raises(BuildError, match="is not a valid data file"):
+        with pytest.raises(BuildError, match="is not valid YAML"):
             load_config(data)
 
-    def test_invalid_data(self, tmp_path: pathlib.Path) -> None:
+    def test_invalid_data_lists_field_and_message_only(self, tmp_path: pathlib.Path) -> None:
         data = tmp_path / "data.yml"
-        data.write_text("inviter: {}\n", encoding="utf-8")
-        with pytest.raises(BuildError, match="invitee"):
+        data.write_text("inviter: {}\ninvitee: {name: Bob, relationship: ''}\n", encoding="utf-8")
+        with pytest.raises(BuildError) as info:
             load_config(data)
+        message = str(info.value)
+        assert "is not a valid data file" in message
+        assert "  inviter.name: Field required" in message
+        assert "  invitee.relationship: String should have at least 1 character" in message
+        assert "pydantic.dev" not in message
+        assert "input_value" not in message
 
     def test_non_utf8(self, tmp_path: pathlib.Path) -> None:
         data = tmp_path / "data.yml"
@@ -87,6 +92,7 @@ class TestEscaping:
         )
         body = tex.split("\\begin{document}", 1)[1]
         assert not RAW_SPECIALS.search(body), body
+        assert "\\textbackslash{}\\" not in body, "a value was escaped twice"
         assert "Alice~\\&~Bob\\_Smith" in tex
         assert "alice\\_smith@example.com" in tex
         assert "for 100\\% leisure." in tex
@@ -95,10 +101,14 @@ class TestEscaping:
         assert "Bob~\\textasciicircum{}~Jones" in tex
         assert "1~Road~\\textbackslash{}~2" in tex
 
-    def test_tilde_is_preserved_as_non_breaking_space(self) -> None:
+    def test_tilde_in_name_is_a_non_breaking_space(self) -> None:
         tex = render({**MINIMAL_DATA, "invitee": {"name": "Mary~Ann Smith", "relationship": "sister"}})
         assert "my sister, Mary~Ann~Smith," in tex
         assert "accommodate Mary~Ann at my place" in tex
+
+    def test_tilde_in_prose_renders_literally(self) -> None:
+        tex = render({**MINIMAL_DATA, "trip": {**TRIP, "reason": "a visit of ~2 weeks"}})
+        assert "for a visit of \\textasciitilde{}2 weeks." in tex
 
     def test_address_multiline_break_survives_escaping(self) -> None:
         assert "1~Example~Road\\\\\nEX1~2AB" in render(MINIMAL_DATA)
@@ -131,14 +141,7 @@ class TestBranches:
         ],
     )
     def test_residence_variants(self, residence: str, item: str) -> None:
-        inviter = {
-            "name": "Alice",
-            "address": ["1 Road"],
-            "phone": "07700900000",
-            "email": "a@b.c",
-            "residence": residence,
-        }
-        assert f"\\item {item}\n" in render({**MINIMAL_DATA, "inviter": inviter})
+        assert f"\\item {item}\n" in render({**MINIMAL_DATA, "inviter": {**INVITER, "residence": residence}})
 
     def test_return_country_only(self) -> None:
         tex = render({**MINIMAL_DATA, "trip": {**TRIP, "return_country": "France"}})
@@ -162,6 +165,13 @@ class TestCompilePdf:
         monkeypatch.setattr("invitation.builder.shutil.which", lambda _: None)
         with pytest.raises(BuildError, match="latexmk not found"):
             compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf")
+
+    def test_missing_engine_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            "invitation.builder.shutil.which", lambda tool: None if tool == "lualatex" else "/usr/bin/x"
+        )
+        with pytest.raises(BuildError, match="lualatex not found"):
+            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", "lualatex")
 
     def test_failed_latexmk_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr("invitation.builder.shutil.which", lambda _: "/usr/bin/latexmk")

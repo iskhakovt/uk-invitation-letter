@@ -6,8 +6,8 @@ from typing import Final
 import pytest
 
 from invitation.builder import build
+from tests.data import REPO_ROOT
 
-REPO_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parent.parent
 FIXTURE_DIR: Final[pathlib.Path] = pathlib.Path(__file__).parent / "fixtures" / "render"
 BASELINE_PDF: Final[pathlib.Path] = FIXTURE_DIR / "baseline.pdf"
 ARTIFACT_DIR: Final[pathlib.Path] = REPO_ROOT / "tests" / "_artifacts" / "render"
