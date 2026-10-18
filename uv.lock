@@ -462,6 +462,7 @@ dependencies = [
     { name = "phonenumbers" },
     { name = "pydantic" },
     { name = "pydantic-yaml" },
+    { name = "ruamel-yaml" },
 ]
 
 [package.dev-dependencies]
@@ -477,6 +478,7 @@ requires-dist = [
     { name = "phonenumbers", specifier = ">=9.0.28,<10" },
     { name = "pydantic", specifier = ">=2.13.2,<3" },
     { name = "pydantic-yaml", specifier = ">=1.6.0,<2" },
+    { name = "ruamel-yaml", specifier = ">=0.18,<0.19" },
 ]
 
 [package.metadata.requires-dev]

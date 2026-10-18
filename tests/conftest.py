@@ -1,3 +1,4 @@
+import copy
 import pathlib
 import re
 
@@ -14,6 +15,27 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Record baseline outputs for render tests instead of comparing against them",
     )
+
+
+# The smallest data file InvitationConfig accepts. Tests build variants with
+# `{**minimal_data, "trip": {...}}`; the fixture hands out a fresh deep copy so
+# an in-place edit in one test can never leak into another.
+MINIMAL_DATA: dict[str, object] = {
+    "inviter": {
+        "name": "Alice Smith",
+        "address": ["1 Example Road", "EX1 2AB"],
+        "phone": "07700900000",
+        "email": "a@example.com",
+    },
+    "invitee": {"name": "Bob Jones", "relationship": "friend"},
+    "embassy": {"name": "British Embassy", "address": ["Foreign City"]},
+    "trip": {"arrival_date": "2026-01-01", "departure_date": "2026-01-10"},
+}
+
+
+@pytest.fixture
+def minimal_data() -> dict[str, object]:
+    return copy.deepcopy(MINIMAL_DATA)
 
 
 @pytest.fixture

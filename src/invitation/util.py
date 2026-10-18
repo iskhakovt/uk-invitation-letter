@@ -80,7 +80,7 @@ def parse_phone(phone: str) -> phonenumbers.PhoneNumber:
     try:
         number = phonenumbers.parse(phone, "GB")
     except phonenumbers.NumberParseException as e:
-        raise ValueError(f"{phone!r} is not a phone number: {e._msg}") from e
+        raise ValueError(f"{phone!r} is not a phone number: {e}") from e
     reason = phonenumbers.is_possible_number_with_reason(number)
     if reason != phonenumbers.ValidationResult.IS_POSSIBLE:
         raise ValueError(f"{phone!r} is not a possible phone number (wrong number of digits?)")

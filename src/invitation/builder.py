@@ -5,25 +5,25 @@ import tempfile
 from typing import Final, Literal, get_args
 
 import jinja2
+from pydantic import ValidationError
 from pydantic_yaml import parse_yaml_raw_as
+from ruamel.yaml import YAMLError
 
 from .model import InvitationConfig
-from .util import Tex, date_format, fix_floating_punctuation, phone_format, tex_escape
+from .util import date_format, fix_floating_punctuation, phone_format, tex_escape
 
 Engine = Literal["xelatex", "lualatex"]
 ENGINES: Final[tuple[Engine, ...]] = get_args(Engine)
 
 
 class BuildError(Exception):
-    """The PDF could not be produced; the message is suitable for showing to the user."""
+    """The letter could not be produced; the message is suitable for showing to the user."""
 
 
 def _finalize(value: object) -> object:
-    # Every `{{ ... }}` expression passes through here. Plain strings are user
-    # text and get escaped; `Tex` values are already LaTeX and pass through.
-    if isinstance(value, str) and not isinstance(value, Tex):
-        return tex_escape(value)
-    return value
+    # Every `{{ ... }}` expression passes through here. Strings are user text
+    # and get escaped; `tex_escape` itself passes `Tex` values through.
+    return tex_escape(value) if isinstance(value, str) else value
 
 
 _TEMPLATE_ENV = jinja2.Environment(
@@ -35,7 +35,15 @@ _TEMPLATE_ENV = jinja2.Environment(
 
 
 def load_config(config_file: pathlib.Path) -> InvitationConfig:
-    return parse_yaml_raw_as(InvitationConfig, config_file.read_text(encoding="utf-8"))
+    """Read and validate a data file. Raises BuildError for anything other than an unreadable file."""
+    try:
+        text = config_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError as e:
+        raise BuildError(f"{config_file} is not UTF-8 encoded: {e}") from e
+    try:
+        return parse_yaml_raw_as(InvitationConfig, text)
+    except (YAMLError, ValidationError) as e:
+        raise BuildError(f"{config_file} is not a valid data file:\n{e}") from e
 
 
 def render_tex(config: InvitationConfig) -> str:

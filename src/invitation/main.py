@@ -3,8 +3,6 @@ import pathlib
 import sys
 from collections.abc import Sequence
 
-from pydantic import ValidationError
-
 from .builder import ENGINES, BuildError, build
 from .template import load_template_yaml
 
@@ -26,9 +24,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             build(args.data, args.output, args.engine)
         elif args.command == "gen":
             sys.stdout.write(load_template_yaml())
-    except ValidationError as e:
-        print(f"error: {args.data} is not a valid data file:\n{e}", file=sys.stderr)
-        return 1
     except (BuildError, OSError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1

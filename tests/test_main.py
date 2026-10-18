@@ -28,6 +28,20 @@ def test_render_invalid_data_file(tmp_path: pathlib.Path, capsys: pytest.Capture
     assert "invitee" in err
 
 
+def test_render_malformed_yaml(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    data = tmp_path / "data.yml"
+    data.write_text("inviter: [\n  bad: {\n", encoding="utf-8")
+    assert main(["render", "--data", str(data), "--output", str(tmp_path / "out.pdf")]) == 1
+    assert "is not a valid data file" in capsys.readouterr().err
+
+
+def test_render_non_utf8_data_file(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    data = tmp_path / "data.yml"
+    data.write_bytes(b"\xff\xfei\x00n\x00")
+    assert main(["render", "--data", str(data), "--output", str(tmp_path / "out.pdf")]) == 1
+    assert "is not UTF-8 encoded" in capsys.readouterr().err
+
+
 def test_render_without_latexmk(
     example_data_file: pathlib.Path,
     tmp_path: pathlib.Path,

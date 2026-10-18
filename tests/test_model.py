@@ -1,5 +1,4 @@
 import datetime
-from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -60,31 +59,17 @@ class TestPronoun:
 
 
 class TestInvitationConfig:
-    def _minimal(self) -> dict[str, Any]:
-        return {
-            "inviter": {
-                "name": "Alice Smith",
-                "address": ["1 Example Road", "EX1 2AB"],
-                "phone": "07700900000",
-                "email": "a@example.com",
-            },
-            "invitee": {"name": "Bob Jones", "relationship": "friend"},
-            "embassy": {"name": "British Embassy", "address": ["Foreign City"]},
-            "trip": {"arrival_date": "2026-01-01", "departure_date": "2026-01-10"},
-        }
-
-    def test_minimal_config_parses(self) -> None:
-        cfg = InvitationConfig(**self._minimal())
+    def test_minimal_config_parses(self, minimal_data: dict[str, object]) -> None:
+        cfg = InvitationConfig.model_validate(minimal_data)
         assert cfg.employer is None
         assert cfg.docs == ()
         assert cfg.trip.financial_support is False
         assert cfg.trip.arrival_date == datetime.date(2026, 1, 1)
 
-    def test_missing_required_field(self) -> None:
-        data = self._minimal()
-        del data["embassy"]
+    def test_missing_required_field(self, minimal_data: dict[str, object]) -> None:
+        del minimal_data["embassy"]
         with pytest.raises(ValidationError):
-            InvitationConfig(**data)
+            InvitationConfig.model_validate(minimal_data)
 
 
 class TestWhitespaceAndBlanks:
@@ -109,11 +94,10 @@ class TestWhitespaceAndBlanks:
         with pytest.raises(ValidationError):
             Pronoun("//")
 
-    def test_blank_optional_text_rejected(self) -> None:
-        data = TestInvitationConfig()._minimal()
-        data["trip"]["reason"] = ""
+    def test_blank_optional_text_rejected(self, minimal_data: dict[str, object]) -> None:
+        data = {**minimal_data, "trip": {"arrival_date": "2026-01-01", "departure_date": "2026-01-10", "reason": ""}}
         with pytest.raises(ValidationError):
-            InvitationConfig(**data)
+            InvitationConfig.model_validate(data)
 
 
 class TestEscaping:
@@ -136,8 +120,7 @@ class TestValidation:
     def test_same_day_trip_allowed(self) -> None:
         Trip(arrival_date=datetime.date(2026, 1, 1), departure_date=datetime.date(2026, 1, 1))
 
-    def test_invalid_phone_rejected(self) -> None:
-        data = TestInvitationConfig()._minimal()
-        data["inviter"]["phone"] = "0775"
+    def test_invalid_phone_rejected(self, minimal_data: dict[str, object]) -> None:
+        inviter = {"name": "Alice Smith", "address": ["1 Example Road"], "phone": "0775", "email": "a@example.com"}
         with pytest.raises(ValidationError, match="not a possible phone number"):
-            InvitationConfig(**data)
+            InvitationConfig.model_validate({**minimal_data, "inviter": inviter})
