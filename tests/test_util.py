@@ -101,7 +101,9 @@ class TestTexNobreak:
         once = tex_nobreak("a & b")
         assert isinstance(once, Tex)
         assert tex_nobreak(once) == once == r"a~\&~b"
-        assert tex_nobreak(tex_escape("a&b")) == r"a\&b"
+
+    def test_tex_input_is_not_escaped_again_but_still_made_non_breaking(self) -> None:
+        assert tex_nobreak(tex_escape("a & b")) == r"a~\&~b"
 
 
 class TestParsePhone:

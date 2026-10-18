@@ -14,8 +14,9 @@ class Tex(str):
 
     Like any `str` subclass, string operations on it (`+`, `.upper()`, slicing,
     Jinja filters) return a plain `str`, which would then be escaped a second
-    time. Transform text *before* escaping it. The render tests assert that no
-    escaped escape sequence ever reaches the output.
+    time. Transform text *before* escaping it. The escaping test in
+    tests/test_builder.py asserts that no double-escaped sequence reaches the
+    output of a letter whose every field contains special characters.
     """
 
 
@@ -53,10 +54,11 @@ def tex_nobreak(s: str) -> Tex:
 
     Spaces become non-breaking. A `~` typed in the data file is kept as one too: that is
     the documented way to hold a two-word first name together in `Name.short_name()`.
+    Input that is already `Tex` is not escaped again but still gets its spaces made non-breaking.
     """
-    if isinstance(s, Tex):
-        return s
-    return Tex(use_non_breaking_space(_escape(s, _TEX_SPECIALS_BUT_TILDE_RE)))
+    if not isinstance(s, Tex):
+        s = _escape(s, _TEX_SPECIALS_BUT_TILDE_RE)
+    return Tex(use_non_breaking_space(s))
 
 
 def and_join(strs: Sequence[str]) -> str:

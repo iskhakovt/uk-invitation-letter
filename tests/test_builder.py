@@ -56,7 +56,7 @@ class TestLoadConfig:
         assert "is not a valid data file" in message
         assert "  inviter.name: Field required" in message
         assert "  invitee.name.0: String should have at least 1 character" in message
-        assert "  invitee.pronoun: Pronouns must have three parts separated by `/`, e.g. `she/her/her`" in message
+        assert "  invitee.pronoun: Pronouns must be written as three non-empty parts" in message
         assert "  trip: departure_date (2026-01-01) must not be before arrival_date (2026-01-02)" in message
         assert "Value error" not in message
         assert "constrained-str" not in message
@@ -100,7 +100,10 @@ class TestEscaping:
         )
         body = tex.split("\\begin{document}", 1)[1]
         assert not RAW_SPECIALS.search(body), body
+        # Nothing in the input has a tilde, so an escaped tilde can only come from
+        # a non-breaking space that was escaped a second time.
         assert "\\textbackslash{}\\" not in body, "a value was escaped twice"
+        assert "\\textasciitilde{}" not in body, "a value was escaped twice"
         assert "Alice~\\&~Bob\\_Smith" in tex
         assert "alice\\_smith@example.com" in tex
         assert "for 100\\% leisure." in tex

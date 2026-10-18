@@ -92,9 +92,14 @@ class TestWhitespaceAndBlanks:
         assert p.root == ("she", "her", "her")
         assert (p.subject, p.object, p.determiner) == ("she", "her", "her")
 
-    def test_pronoun_blank_part_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            Pronoun("//")
+    @pytest.mark.parametrize("value", ["//", "she//her", " / / ", ["she", "her", "her"], 42])
+    def test_pronoun_bad_input_gets_the_format_hint(self, value: object) -> None:
+        with pytest.raises(ValidationError, match="e.g. `she/her/her`"):
+            Pronoun(value)
+
+    def test_name_none_gets_a_hint(self) -> None:
+        with pytest.raises(ValidationError, match="string or a list of strings"):
+            Name(None)
 
     def test_blank_optional_text_rejected(self) -> None:
         data = {**MINIMAL_DATA, "trip": {**TRIP, "reason": ""}}

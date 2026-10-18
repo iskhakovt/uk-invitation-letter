@@ -25,6 +25,8 @@ class Address(RootModel):
 
 
 def _one_or_many(value: object) -> object:
+    if value is None:
+        raise ValueError("Name must be a string or a list of strings")
     return [value] if isinstance(value, str) else value
 
 
@@ -40,12 +42,15 @@ class Name(RootModel):
         return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.root]))
 
 
-def _split_pronoun(value: object) -> object:
+_PRONOUN_HINT = "Pronouns must be written as three non-empty parts separated by `/`, e.g. `she/her/her`"
+
+
+def _split_pronoun(value: object) -> list[str]:
     if not isinstance(value, str):
-        return value
-    parts = value.split("/")
-    if len(parts) != 3:
-        raise ValueError("Pronouns must have three parts separated by `/`, e.g. `she/her/her`")
+        raise ValueError(_PRONOUN_HINT)
+    parts = [part.strip() for part in value.split("/")]
+    if len(parts) != 3 or not all(parts):
+        raise ValueError(_PRONOUN_HINT)
     return parts
 
 
