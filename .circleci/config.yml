@@ -89,7 +89,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              python-version: ["3.11", "3.14"]
+              python-version: ["3.11", "3.15"]
       - render-test
       - release:
           requires:
@@ -103,7 +103,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              python-version: ["3.11", "3.14"]
+              python-version: ["3.11", "3.15"]
           filters:
             tags:
               only: /.*/

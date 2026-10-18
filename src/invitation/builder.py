@@ -2,7 +2,7 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Final, Literal, get_args
+from typing import Final, Literal, get_args
 
 import jinja2
 from pydantic_yaml import parse_yaml_raw_as
@@ -18,7 +18,7 @@ class BuildError(Exception):
     """The PDF could not be produced; the message is suitable for showing to the user."""
 
 
-def _finalize(value: Any) -> Any:
+def _finalize(value: object) -> object:
     # Every `{{ ... }}` expression passes through here. Plain strings are user
     # text and get escaped; `Tex` values are already LaTeX and pass through.
     if isinstance(value, str) and not isinstance(value, Tex):
