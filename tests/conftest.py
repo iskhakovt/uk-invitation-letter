@@ -1,6 +1,5 @@
 import pathlib
 import re
-from collections.abc import Mapping
 from typing import Final
 
 import pytest
@@ -16,28 +15,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Record baseline outputs for render tests instead of comparing against them",
     )
-
-
-# The smallest data file InvitationConfig accepts. It is immutable by type, so
-# tests build variants with `{**minimal_data, "trip": {...}}` rather than
-# editing it in place; the fixture exists because test modules cannot import
-# from conftest under pytest's importlib mode.
-MINIMAL_DATA: Final[Mapping[str, object]] = {
-    "inviter": {
-        "name": "Alice Smith",
-        "address": ["1 Example Road", "EX1 2AB"],
-        "phone": "07700900000",
-        "email": "a@example.com",
-    },
-    "invitee": {"name": "Bob Jones", "relationship": "friend"},
-    "embassy": {"name": "British Embassy", "address": ["Foreign City"]},
-    "trip": {"arrival_date": "2026-01-01", "departure_date": "2026-01-10"},
-}
-
-
-@pytest.fixture
-def minimal_data() -> Mapping[str, object]:
-    return MINIMAL_DATA
 
 
 @pytest.fixture

@@ -73,9 +73,11 @@ select = ["F", "E", "W", "I", "B", "UP"]
 
 [tool.pyrefly]
 python-version = "3.11"
+search-path = ["src", "."]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "--import-mode=importlib --strict-markers -m 'not render'"
 markers = [
     "render: end-to-end PDF render test (requires latexmk, xelatex, diff-pdf)",

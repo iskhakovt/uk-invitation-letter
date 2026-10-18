@@ -8,6 +8,7 @@ from pydantic_yaml import parse_yaml_raw_as
 
 from invitation.builder import BuildError, compile_pdf, load_config, render_tex
 from invitation.model import InvitationConfig
+from tests.data import MINIMAL_DATA
 
 RAW_SPECIALS: Final[re.Pattern[str]] = re.compile(r"(?<!\\)[&%#_$]")  # an unescaped LaTeX special in rendered body text
 TRIP: Final[Mapping[str, object]] = {"arrival_date": "2026-01-01", "departure_date": "2026-01-10"}
@@ -94,26 +95,26 @@ class TestEscaping:
         assert "Bob~\\textasciicircum{}~Jones" in tex
         assert "1~Road~\\textbackslash{}~2" in tex
 
-    def test_tilde_is_preserved_as_non_breaking_space(self, minimal_data: Mapping[str, object]) -> None:
-        tex = render({**minimal_data, "invitee": {"name": "Mary~Ann Smith", "relationship": "sister"}})
+    def test_tilde_is_preserved_as_non_breaking_space(self) -> None:
+        tex = render({**MINIMAL_DATA, "invitee": {"name": "Mary~Ann Smith", "relationship": "sister"}})
         assert "my sister, Mary~Ann~Smith," in tex
         assert "accommodate Mary~Ann at my place" in tex
 
-    def test_address_multiline_break_survives_escaping(self, minimal_data: Mapping[str, object]) -> None:
-        assert "1~Example~Road\\\\\nEX1~2AB" in render(minimal_data)
+    def test_address_multiline_break_survives_escaping(self) -> None:
+        assert "1~Example~Road\\\\\nEX1~2AB" in render(MINIMAL_DATA)
 
 
 class TestBranches:
-    def test_no_employer_no_optionals(self, minimal_data: Mapping[str, object]) -> None:
-        tex = render(minimal_data)
+    def test_no_employer_no_optionals(self) -> None:
+        tex = render(MINIMAL_DATA)
         assert "employed at" not in tex
         assert "employment reference" not in tex
         assert "After their trip" not in tex
         assert "proof of address" not in tex
         assert "until 10~January~2026.\n" in tex
 
-    def test_financial_support(self, minimal_data: Mapping[str, object]) -> None:
-        tex = render({**minimal_data, "trip": {**TRIP, "financial_support": True}})
+    def test_financial_support(self) -> None:
+        tex = render({**MINIMAL_DATA, "trip": {**TRIP, "financial_support": True}})
         assert (
             "will be in receipt of a return ticket and all of the expenses for their journey will be met by me." in tex
         )
@@ -129,7 +130,7 @@ class TestBranches:
             ("settled status letter", "settled status letter"),
         ],
     )
-    def test_residence_variants(self, minimal_data: Mapping[str, object], residence: str, item: str) -> None:
+    def test_residence_variants(self, residence: str, item: str) -> None:
         inviter = {
             "name": "Alice",
             "address": ["1 Road"],
@@ -137,19 +138,19 @@ class TestBranches:
             "email": "a@b.c",
             "residence": residence,
         }
-        assert f"\\item {item}\n" in render({**minimal_data, "inviter": inviter})
+        assert f"\\item {item}\n" in render({**MINIMAL_DATA, "inviter": inviter})
 
-    def test_return_country_only(self, minimal_data: Mapping[str, object]) -> None:
-        tex = render({**minimal_data, "trip": {**TRIP, "return_country": "France"}})
+    def test_return_country_only(self) -> None:
+        tex = render({**MINIMAL_DATA, "trip": {**TRIP, "return_country": "France"}})
         assert "After their trip to the UK, Bob will return to France." in tex
 
-    def test_return_reason_only(self, minimal_data: Mapping[str, object]) -> None:
-        tex = render({**minimal_data, "trip": {**TRIP, "return_reason": "to study"}})
+    def test_return_reason_only(self) -> None:
+        tex = render({**MINIMAL_DATA, "trip": {**TRIP, "return_reason": "to study"}})
         assert "After their trip to the UK, Bob will leave the UK to study." in tex
 
-    def test_custom_pronouns(self, minimal_data: Mapping[str, object]) -> None:
+    def test_custom_pronouns(self) -> None:
         tex = render(
-            {**minimal_data, "invitee": {"name": "Carol Lee", "relationship": "mother", "pronoun": "she/her/her"}}
+            {**MINIMAL_DATA, "invitee": {"name": "Carol Lee", "relationship": "mother", "pronoun": "she/her/her"}}
         )
         assert "She will travel to the United~Kingdom" in tex
         assert "She will use her savings for the trip, and I will assist her" in tex
