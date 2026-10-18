@@ -1,4 +1,5 @@
 import datetime
+from collections.abc import Mapping
 
 import pytest
 from pydantic import ValidationError
@@ -59,17 +60,17 @@ class TestPronoun:
 
 
 class TestInvitationConfig:
-    def test_minimal_config_parses(self, minimal_data: dict[str, object]) -> None:
+    def test_minimal_config_parses(self, minimal_data: Mapping[str, object]) -> None:
         cfg = InvitationConfig.model_validate(minimal_data)
         assert cfg.employer is None
         assert cfg.docs == ()
         assert cfg.trip.financial_support is False
         assert cfg.trip.arrival_date == datetime.date(2026, 1, 1)
 
-    def test_missing_required_field(self, minimal_data: dict[str, object]) -> None:
-        del minimal_data["embassy"]
+    def test_missing_required_field(self, minimal_data: Mapping[str, object]) -> None:
+        data = {key: value for key, value in minimal_data.items() if key != "embassy"}
         with pytest.raises(ValidationError):
-            InvitationConfig.model_validate(minimal_data)
+            InvitationConfig.model_validate(data)
 
 
 class TestWhitespaceAndBlanks:
@@ -94,7 +95,7 @@ class TestWhitespaceAndBlanks:
         with pytest.raises(ValidationError):
             Pronoun("//")
 
-    def test_blank_optional_text_rejected(self, minimal_data: dict[str, object]) -> None:
+    def test_blank_optional_text_rejected(self, minimal_data: Mapping[str, object]) -> None:
         data = {**minimal_data, "trip": {"arrival_date": "2026-01-01", "departure_date": "2026-01-10", "reason": ""}}
         with pytest.raises(ValidationError):
             InvitationConfig.model_validate(data)
@@ -120,7 +121,7 @@ class TestValidation:
     def test_same_day_trip_allowed(self) -> None:
         Trip(arrival_date=datetime.date(2026, 1, 1), departure_date=datetime.date(2026, 1, 1))
 
-    def test_invalid_phone_rejected(self, minimal_data: dict[str, object]) -> None:
+    def test_invalid_phone_rejected(self, minimal_data: Mapping[str, object]) -> None:
         inviter = {"name": "Alice Smith", "address": ["1 Example Road"], "phone": "0775", "email": "a@example.com"}
         with pytest.raises(ValidationError, match="not a possible phone number"):
             InvitationConfig.model_validate({**minimal_data, "inviter": inviter})

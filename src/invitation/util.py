@@ -1,6 +1,7 @@
 import datetime
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from typing import Final
 
 import phonenumbers
 
@@ -16,7 +17,7 @@ class Tex(str):
 # `~` is deliberately not in this table: it is the documented way to write a
 # non-breaking space in the data file, and the only LaTeX character users may
 # use on purpose.
-_TEX_SPECIALS = {
+_TEX_SPECIALS: Final[Mapping[str, str]] = {
     "\\": r"\textbackslash{}",
     "&": r"\&",
     "%": r"\%",
@@ -27,7 +28,7 @@ _TEX_SPECIALS = {
     "}": r"\}",
     "^": r"\textasciicircum{}",
 }
-_TEX_SPECIALS_RE = re.compile("[" + re.escape("".join(_TEX_SPECIALS)) + "]")
+_TEX_SPECIALS_RE: Final[re.Pattern[str]] = re.compile("[" + re.escape("".join(_TEX_SPECIALS)) + "]")
 
 
 def tex_escape(s: str) -> Tex:
@@ -50,7 +51,7 @@ def and_join(strs: Sequence[str]) -> str:
 # Hard-coded so month names don't depend on the host's LC_TIME (strftime("%B")
 # is locale-coupled). Babel would solve it with CLDR data but costs ~10 MB for
 # one locale — the product only ever emits British English.
-_MONTHS = (
+_MONTHS: Final[tuple[str, ...]] = (
     "January",
     "February",
     "March",

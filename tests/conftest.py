@@ -1,11 +1,12 @@
-import copy
 import pathlib
 import re
+from collections.abc import Mapping
+from typing import Final
 
 import pytest
 
-REPO_ROOT = pathlib.Path(__file__).parent.parent
-README = REPO_ROOT / "README.md"
+REPO_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parent.parent
+README: Final[pathlib.Path] = REPO_ROOT / "README.md"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -17,10 +18,11 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
-# The smallest data file InvitationConfig accepts. Tests build variants with
-# `{**minimal_data, "trip": {...}}`; the fixture hands out a fresh deep copy so
-# an in-place edit in one test can never leak into another.
-MINIMAL_DATA: dict[str, object] = {
+# The smallest data file InvitationConfig accepts. It is immutable by type, so
+# tests build variants with `{**minimal_data, "trip": {...}}` rather than
+# editing it in place; the fixture exists because test modules cannot import
+# from conftest under pytest's importlib mode.
+MINIMAL_DATA: Final[Mapping[str, object]] = {
     "inviter": {
         "name": "Alice Smith",
         "address": ["1 Example Road", "EX1 2AB"],
@@ -34,8 +36,8 @@ MINIMAL_DATA: dict[str, object] = {
 
 
 @pytest.fixture
-def minimal_data() -> dict[str, object]:
-    return copy.deepcopy(MINIMAL_DATA)
+def minimal_data() -> Mapping[str, object]:
+    return MINIMAL_DATA
 
 
 @pytest.fixture

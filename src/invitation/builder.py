@@ -26,7 +26,7 @@ def _finalize(value: object) -> object:
     return tex_escape(value) if isinstance(value, str) else value
 
 
-_TEMPLATE_ENV = jinja2.Environment(
+_TEMPLATE_ENV: Final[jinja2.Environment] = jinja2.Environment(
     loader=jinja2.PackageLoader("invitation", "templates"),
     trim_blocks=True,
     lstrip_blocks=True,
