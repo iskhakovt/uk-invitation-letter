@@ -89,6 +89,7 @@ class TestWhitespaceAndBlanks:
 
     def test_pronoun_parts_are_stripped(self) -> None:
         p = Pronoun(" she / her / her ")
+        assert p.root == ("she", "her", "her")
         assert (p.subject, p.object, p.determiner) == ("she", "her", "her")
 
     def test_pronoun_blank_part_rejected(self) -> None:

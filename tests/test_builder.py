@@ -45,13 +45,21 @@ class TestLoadConfig:
 
     def test_invalid_data_lists_field_and_message_only(self, tmp_path: pathlib.Path) -> None:
         data = tmp_path / "data.yml"
-        data.write_text("inviter: {}\ninvitee: {name: Bob, relationship: ''}\n", encoding="utf-8")
+        data.write_text(
+            "inviter: {}\ninvitee: {name: '', relationship: friend, pronoun: she/her}\n"
+            "embassy: {name: E, address: [x]}\ntrip: {arrival_date: 2026-01-02, departure_date: 2026-01-01}\n",
+            encoding="utf-8",
+        )
         with pytest.raises(BuildError) as info:
             load_config(data)
         message = str(info.value)
         assert "is not a valid data file" in message
         assert "  inviter.name: Field required" in message
-        assert "  invitee.relationship: String should have at least 1 character" in message
+        assert "  invitee.name.0: String should have at least 1 character" in message
+        assert "  invitee.pronoun: Pronouns must have three parts separated by `/`, e.g. `she/her/her`" in message
+        assert "  trip: departure_date (2026-01-01) must not be before arrival_date (2026-01-02)" in message
+        assert "Value error" not in message
+        assert "constrained-str" not in message
         assert "pydantic.dev" not in message
         assert "input_value" not in message
 

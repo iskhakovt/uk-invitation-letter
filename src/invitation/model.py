@@ -2,7 +2,7 @@ import datetime
 from collections.abc import Sequence
 from typing import Annotated, Self
 
-from pydantic import AfterValidator, BaseModel, Field, RootModel, StringConstraints, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, RootModel, StringConstraints, field_validator, model_validator
 
 from .util import Tex, and_join, parse_phone, tex_nobreak
 
@@ -24,46 +24,47 @@ class Address(RootModel):
         return Tex("\\\\\n".join(self._lines()))
 
 
-class Name(RootModel):
-    root: NonBlankStr | NonEmptyStrList
+def _one_or_many(value: object) -> object:
+    return [value] if isinstance(value, str) else value
 
-    def _as_sequence(self) -> Sequence[str]:
-        return [self.root] if isinstance(self.root, str) else self.root
+
+class Name(RootModel):
+    """One name, or several for a joint letter. A single string is accepted as shorthand for a one-item list."""
+
+    root: Annotated[NonEmptyStrList, BeforeValidator(_one_or_many)]
 
     def full_name(self) -> Tex:
-        return Tex(and_join([tex_nobreak(name) for name in self._as_sequence()]))
+        return Tex(and_join([tex_nobreak(name) for name in self.root]))
 
     def short_name(self) -> Tex:
-        return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self._as_sequence()]))
+        return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.root]))
 
 
-def _normalise_pronoun(value: str) -> str:
-    parts = [part.strip() for part in value.split("/")]
-    if len(parts) != 3 or not all(parts):
-        raise ValueError("Pronouns must have three non-empty parts separated by `/`, e.g. `she/her/her`")
-    return "/".join(parts)
+def _split_pronoun(value: object) -> object:
+    if not isinstance(value, str):
+        return value
+    parts = value.split("/")
+    if len(parts) != 3:
+        raise ValueError("Pronouns must have three parts separated by `/`, e.g. `she/her/her`")
+    return parts
 
 
 class Pronoun(RootModel):
-    root: Annotated[str, AfterValidator(_normalise_pronoun)] | None = None
+    """Subject, object and determiner forms, written `she/her/her`. Defaults to they/them/their."""
 
-    def _parts(self) -> tuple[str, str, str]:
-        if self.root is None:
-            return ("they", "them", "their")
-        subject, obj, determiner = self.root.split("/")
-        return (subject, obj, determiner)
+    root: Annotated[tuple[NonBlankStr, NonBlankStr, NonBlankStr], BeforeValidator(_split_pronoun)] | None = None
 
     @property
     def subject(self) -> str:
-        return self._parts()[0]
+        return self.root[0] if self.root else "they"
 
     @property
     def object(self) -> str:
-        return self._parts()[1]
+        return self.root[1] if self.root else "them"
 
     @property
     def determiner(self) -> str:
-        return self._parts()[2]
+        return self.root[2] if self.root else "their"
 
 
 class Inviter(BaseModel):

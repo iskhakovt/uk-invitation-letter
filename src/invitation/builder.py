@@ -38,7 +38,7 @@ def _format_validation_error(e: ValidationError) -> str:
     lines = []
     for error in e.errors():
         location = ".".join(str(part) for part in error["loc"]) or "(top level)"
-        lines.append(f"  {location}: {error['msg']}")
+        lines.append(f"  {location}: {error['msg'].removeprefix('Value error, ')}")
     return "\n".join(lines)
 
 

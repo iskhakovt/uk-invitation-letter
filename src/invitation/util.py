@@ -1,7 +1,7 @@
 import datetime
 import re
 from collections.abc import Mapping, Sequence
-from typing import Final, NoReturn
+from typing import Final
 
 import phonenumbers
 
@@ -12,15 +12,11 @@ class Tex(str):
     Everything else that reaches the template is escaped automatically (see
     builder.py), so model methods that emit LaTeX markup return this type.
 
-    Ordinary `str` methods return a plain `str`, which would be escaped a second
-    time. Transform text *before* escaping it; the case-changing methods below
-    refuse to run so that mistake fails loudly instead of printing backslashes.
+    Like any `str` subclass, string operations on it (`+`, `.upper()`, slicing,
+    Jinja filters) return a plain `str`, which would then be escaped a second
+    time. Transform text *before* escaping it. The render tests assert that no
+    escaped escape sequence ever reaches the output.
     """
-
-    def _refuse(self, *args: object, **kwargs: object) -> NoReturn:
-        raise TypeError("transform text before escaping it; a Tex value is final LaTeX")
-
-    capitalize = casefold = lower = swapcase = title = upper = _refuse
 
 
 _TEX_SPECIALS: Final[Mapping[str, str]] = {
@@ -37,15 +33,19 @@ _TEX_SPECIALS: Final[Mapping[str, str]] = {
 }
 _TEX_SPECIALS_RE: Final[re.Pattern[str]] = re.compile("[" + re.escape("".join(_TEX_SPECIALS)) + "]")
 _TEX_SPECIALS_BUT_TILDE_RE: Final[re.Pattern[str]] = re.compile(
-    "[" + re.escape("".join(_TEX_SPECIALS.keys() - {"~"})) + "]"
+    "[" + re.escape("".join(c for c in _TEX_SPECIALS if c != "~")) + "]"
 )
+
+
+def _escape(s: str, specials: re.Pattern[str]) -> str:
+    return specials.sub(lambda m: _TEX_SPECIALS[m.group()], s)
 
 
 def tex_escape(s: str) -> Tex:
     """Escape LaTeX special characters so free text renders literally."""
     if isinstance(s, Tex):
         return s
-    return Tex(_TEX_SPECIALS_RE.sub(lambda m: _TEX_SPECIALS[m.group()], s))
+    return Tex(_escape(s, _TEX_SPECIALS_RE))
 
 
 def tex_nobreak(s: str) -> Tex:
@@ -54,7 +54,9 @@ def tex_nobreak(s: str) -> Tex:
     Spaces become non-breaking. A `~` typed in the data file is kept as one too: that is
     the documented way to hold a two-word first name together in `Name.short_name()`.
     """
-    return Tex(use_non_breaking_space(_TEX_SPECIALS_BUT_TILDE_RE.sub(lambda m: _TEX_SPECIALS[m.group()], s)))
+    if isinstance(s, Tex):
+        return s
+    return Tex(use_non_breaking_space(_escape(s, _TEX_SPECIALS_BUT_TILDE_RE)))
 
 
 def and_join(strs: Sequence[str]) -> str:

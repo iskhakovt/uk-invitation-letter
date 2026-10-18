@@ -84,11 +84,10 @@ class TestTexEscape:
     def test_escapes_tilde(self) -> None:
         assert tex_escape("~2 weeks") == r"\textasciitilde{}2 weeks"
 
-    def test_refuses_case_transformations(self) -> None:
-        with pytest.raises(TypeError, match="before escaping"):
-            tex_escape("a&b").capitalize()
-        with pytest.raises(TypeError):
-            tex_escape("a&b").upper()
+    def test_returns_tex_and_is_idempotent_on_tex(self) -> None:
+        once = tex_escape("50%")
+        assert isinstance(once, Tex)
+        assert tex_escape(once) == once == r"50\%"
 
 
 class TestTexNobreak:
@@ -98,13 +97,11 @@ class TestTexNobreak:
     def test_typed_tilde_is_kept(self) -> None:
         assert tex_nobreak("Mary~Ann Smith") == "Mary~Ann~Smith"
 
-    def test_returns_tex(self) -> None:
-        assert isinstance(tex_nobreak("x"), Tex)
-
     def test_returns_tex_and_is_idempotent_on_tex(self) -> None:
-        once = tex_escape("50%")
+        once = tex_nobreak("a & b")
         assert isinstance(once, Tex)
-        assert tex_escape(once) == once == r"50\%"
+        assert tex_nobreak(once) == once == r"a~\&~b"
+        assert tex_nobreak(tex_escape("a&b")) == r"a\&b"
 
 
 class TestParsePhone:
