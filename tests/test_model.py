@@ -3,7 +3,7 @@ import datetime
 import pytest
 from pydantic import ValidationError
 
-from invitation.model import Address, InvitationConfig, Name, Pronoun, Trip
+from invitation.model import THEY, Address, InvitationConfig, Name, Pronoun, Trip
 from tests.data import INVITER, MINIMAL_DATA, TRIP
 
 
@@ -45,18 +45,20 @@ class TestName:
 
 class TestPronoun:
     def test_default_they_them_their(self) -> None:
-        p = Pronoun()
-        assert (p.subject, p.object, p.determiner) == ("they", "them", "their")
+        assert (THEY.subject, THEY.object, THEY.determiner) == ("they", "them", "their")
 
-    def test_custom(self) -> None:
-        p = Pronoun("she/her/her")
-        assert (p.subject, p.object, p.determiner) == ("she", "her", "her")
+    def test_slash_form(self) -> None:
+        p = Pronoun.model_validate("she/her/her")
+        assert p == Pronoun(subject="she", object="her", determiner="her")
+
+    def test_null_means_default(self) -> None:
+        assert Pronoun.model_validate(None) == THEY
 
     def test_must_have_three_parts(self) -> None:
-        with pytest.raises(ValidationError):
-            Pronoun("she/her")
-        with pytest.raises(ValidationError):
-            Pronoun("she/her/her/hers")
+        with pytest.raises(ValidationError, match="e.g. `she/her/her`"):
+            Pronoun.model_validate("she/her")
+        with pytest.raises(ValidationError, match="e.g. `she/her/her`"):
+            Pronoun.model_validate("she/her/her/hers")
 
 
 class TestInvitationConfig:
@@ -88,14 +90,18 @@ class TestWhitespaceAndBlanks:
             Address([" "])
 
     def test_pronoun_parts_are_stripped(self) -> None:
-        p = Pronoun(" she / her / her ")
-        assert p.root == ("she", "her", "her")
+        p = Pronoun.model_validate(" she / her / her ")
         assert (p.subject, p.object, p.determiner) == ("she", "her", "her")
 
-    @pytest.mark.parametrize("value", ["//", "she//her", " / / ", ["she", "her", "her"], 42])
-    def test_pronoun_bad_input_gets_the_format_hint(self, value: object) -> None:
-        with pytest.raises(ValidationError, match="e.g. `she/her/her`"):
-            Pronoun(value)
+    @pytest.mark.parametrize("value", ["//", "she//her", " / / "])
+    def test_pronoun_blank_part_rejected(self, value: str) -> None:
+        with pytest.raises(ValidationError, match="at least 1 character"):
+            Pronoun.model_validate(value)
+
+    @pytest.mark.parametrize("value", [["she", "her", "her"], 42])
+    def test_pronoun_wrong_type_rejected(self, value: object) -> None:
+        with pytest.raises(ValidationError):
+            Pronoun.model_validate(value)
 
     def test_name_none_gets_a_hint(self) -> None:
         with pytest.raises(ValidationError, match="string or a list of strings"):

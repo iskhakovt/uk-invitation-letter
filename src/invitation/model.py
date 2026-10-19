@@ -1,6 +1,6 @@
 import datetime
-from collections.abc import Sequence
-from typing import Annotated, Self
+from collections.abc import Mapping, Sequence
+from typing import Annotated, Final, Self
 
 from pydantic import BaseModel, BeforeValidator, Field, RootModel, StringConstraints, field_validator, model_validator
 
@@ -42,34 +42,31 @@ class Name(RootModel):
         return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.root]))
 
 
-_PRONOUN_HINT = "Pronouns must be written as three non-empty parts separated by `/`, e.g. `she/her/her`"
+class Pronoun(BaseModel, frozen=True):
+    """The three forms a letter needs: `she` will travel, I will assist `her`, `her` savings.
+
+    Written in the data file as `she/her/her`; `null` or omitted means they/them/their.
+    """
+
+    subject: NonBlankStr
+    object: NonBlankStr
+    determiner: NonBlankStr
+
+    @model_validator(mode="before")
+    @classmethod
+    def from_slash_form(cls, value: object) -> object:
+        if value is None:
+            return _THEY_FORMS
+        if not isinstance(value, str):
+            return value
+        parts = value.split("/")
+        if len(parts) != 3:
+            raise ValueError("write pronouns as three parts separated by `/`, e.g. `she/her/her`")
+        return dict(zip(("subject", "object", "determiner"), parts, strict=True))
 
 
-def _split_pronoun(value: object) -> list[str]:
-    if not isinstance(value, str):
-        raise ValueError(_PRONOUN_HINT)
-    parts = [part.strip() for part in value.split("/")]
-    if len(parts) != 3 or not all(parts):
-        raise ValueError(_PRONOUN_HINT)
-    return parts
-
-
-class Pronoun(RootModel):
-    """Subject, object and determiner forms, written `she/her/her`. Defaults to they/them/their."""
-
-    root: Annotated[tuple[NonBlankStr, NonBlankStr, NonBlankStr], BeforeValidator(_split_pronoun)] | None = None
-
-    @property
-    def subject(self) -> str:
-        return self.root[0] if self.root else "they"
-
-    @property
-    def object(self) -> str:
-        return self.root[1] if self.root else "them"
-
-    @property
-    def determiner(self) -> str:
-        return self.root[2] if self.root else "their"
+_THEY_FORMS: Final[Mapping[str, str]] = {"subject": "they", "object": "them", "determiner": "their"}
+THEY: Final[Pronoun] = Pronoun.model_validate(_THEY_FORMS)
 
 
 class Inviter(BaseModel):
@@ -89,7 +86,7 @@ class Inviter(BaseModel):
 
 class Invitee(BaseModel):
     name: Name
-    pronoun: Pronoun = Field(default_factory=Pronoun)
+    pronoun: Pronoun = THEY
     relationship: NonBlankStr
 
 
