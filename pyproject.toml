@@ -80,5 +80,5 @@ testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "--import-mode=importlib --strict-markers -m 'not render'"
 markers = [
-    "render: end-to-end PDF render test (requires latexmk, xelatex, diff-pdf)",
+    "render: end-to-end PDF render test (requires diff-pdf and a TeX engine)",
 ]

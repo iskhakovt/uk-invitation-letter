@@ -67,6 +67,18 @@ jobs:
             apt-get update -qq
             apt-get install -y -qq --no-install-recommends diff-pdf-wx ca-certificates curl
       - run:
+          name: Install Tectonic
+          command: |
+            cd /usr/local/bin
+            curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+            tectonic --version
+      # Tectonic fetches the packages the preamble needs on first use; cache them
+      # keyed on the preamble so a template change refreshes the bundle files.
+      - restore_cache:
+          keys:
+            - tectonic-v1-{{ checksum "src/invitation/templates/letter.tex.jinja" }}
+            - tectonic-v1-
+      - run:
           name: Install uv
           command: |
             curl -LsSf https://astral.sh/uv/0.11.7/install.sh | sh
@@ -80,7 +92,11 @@ jobs:
           key: uv-v1-{{ checksum "uv.lock" }}
           paths:
             - /root/.cache/uv
-      - run: uv run pytest -m render
+      - run: uv run pytest -m render --require-engines
+      - save_cache:
+          key: tectonic-v1-{{ checksum "src/invitation/templates/letter.tex.jinja" }}
+          paths:
+            - /root/.cache/Tectonic
       - store_artifacts:
           path: tests/_artifacts
 

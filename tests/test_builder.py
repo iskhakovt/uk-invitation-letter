@@ -6,7 +6,7 @@ from typing import Final
 import pytest
 from pydantic_yaml import parse_yaml_raw_as
 
-from invitation.builder import BuildError, compile_pdf, load_config, render_tex
+from invitation.builder import BuildError, Engine, compile_pdf, load_config, render_tex
 from invitation.model import InvitationConfig
 from tests.data import INVITER, MINIMAL_DATA, TRIP
 
@@ -177,6 +177,39 @@ class TestCompilePdf:
         monkeypatch.setattr("invitation.builder.shutil.which", lambda _: None)
         with pytest.raises(BuildError, match="latexmk not found"):
             compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf")
+
+    def test_missing_tectonic_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("invitation.builder.shutil.which", lambda _: None)
+        with pytest.raises(BuildError, match="tectonic not found on PATH; install tectonic$"):
+            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", "tectonic")
+
+    @pytest.mark.parametrize(
+        ("engine", "head", "flag"),
+        [
+            ("xelatex", "latexmk", "-xelatex"),
+            ("lualatex", "latexmk", "-lualatex"),
+            ("pdflatex", "latexmk", "-pdf"),
+            ("tectonic", "tectonic", "--outdir"),
+        ],
+    )
+    def test_command_per_engine(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, engine: Engine, head: str, flag: str
+    ) -> None:
+        seen: list[list[object]] = []
+
+        def fake_run(command: list[object], **_: object) -> object:
+            seen.append(command)
+            (tmp_path / "out.pdf").parent.mkdir(exist_ok=True)
+            pathlib.Path(str(command[-1])).with_suffix(".pdf").write_bytes(b"%PDF")
+            return type("Result", (), {"returncode": 0})()
+
+        monkeypatch.setattr("invitation.builder.shutil.which", lambda _: "/usr/bin/x")
+        monkeypatch.setattr("invitation.builder.subprocess.run", fake_run)
+        compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", engine)
+        (command,) = seen
+        assert command[0] == head
+        assert flag in command
+        assert (tmp_path / "out.pdf").read_bytes() == b"%PDF"
 
     def test_missing_engine_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(

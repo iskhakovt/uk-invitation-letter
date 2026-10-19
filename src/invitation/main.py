@@ -14,7 +14,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     render = subparsers.add_parser("render", help="Render an invitation PDF from a data file")
     render.add_argument("--data", type=pathlib.Path, required=True, help="Invitation data file path")
     render.add_argument("--output", type=pathlib.Path, required=True, help="Output PDF path")
-    render.add_argument("--engine", choices=ENGINES, default="xelatex", help="LaTeX engine (default: xelatex)")
+    render.add_argument(
+        "--engine",
+        choices=ENGINES,
+        default="xelatex",
+        help="TeX engine (default: xelatex). xelatex, lualatex and pdflatex run through latexmk; "
+        "tectonic is self-contained and fetches packages itself.",
+    )
 
     subparsers.add_parser("gen", help="Print a template data.yml to stdout")
 
