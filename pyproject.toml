@@ -15,7 +15,7 @@ dependencies = [
     "phonenumbers>=9.0.28,<10",
     "pydantic>=2.13.2,<3",
     "pydantic-yaml>=1.6.0,<2",
-    "ruamel.yaml>=0.18,<0.19",
+    "ruamel.yaml>=0.18,<0.20",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
