@@ -15,6 +15,7 @@ dependencies = [
     "phonenumbers>=9.0.28,<10",
     "pydantic>=2.13.2,<3",
     "pydantic-yaml>=1.6.0,<2",
+    "ruamel.yaml>=0.18,<0.19",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -22,6 +23,12 @@ classifiers = [
     "Intended Audience :: Legal Industry",
     "Natural Language :: English",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Text Processing :: Markup :: LaTeX",
 ]
 
@@ -66,9 +73,11 @@ select = ["F", "E", "W", "I", "B", "UP"]
 
 [tool.pyrefly]
 python-version = "3.11"
+search-path = ["src", "."]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "--import-mode=importlib --strict-markers -m 'not render'"
 markers = [
     "render: end-to-end PDF render test (requires latexmk, xelatex, diff-pdf)",

@@ -2,7 +2,7 @@
 # Replace the sample values with your own data.
 
 inviter:
-  name: Your Name  # use `~` for a non-breaking space, e.g. `John~H~Smith`
+  name: Your Name  # spaces never break across lines; special characters (& % # _ etc.) are escaped for you
   address:
     - 123 Example Street
     - Example City EC1A 1AA
@@ -25,7 +25,7 @@ embassy:
     - Example Country
 
 invitee:
-  name:  # <first name> [<other names>]+ <last name>
+  name:  # <first name> [<other names>]+ <last name>; write `Mary~Ann Smith` to keep a two-word first name together
     - Invitee Name
   pronoun: null  # optional, they/them/their by default; otherwise e.g. she/her/her
   relationship: friend
