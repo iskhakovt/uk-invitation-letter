@@ -2,30 +2,30 @@
 
 
 {% block signature %}
-{{ inviter.name.full_name() }}
+{{ inviter.name|nobreak }}
 {% endblock %}
 
 
 {% block addressor %}
-{{ inviter.name.full_name() }} \\
-{{ inviter.address.multiline() }} \\[1ex]
-{{ phone_format(inviter.phone) }} \\[1ex]
+{{ inviter.name|nobreak }} \\
+{{ inviter.address|address_block }} \\[1ex]
+{{ inviter.phone|phone }} \\[1ex]
 {{ inviter.email }} \\
 {% endblock %}
 
 
 {% block addressee %}
-{{ embassy.name.full_name() }} \\
-{{ embassy.address.multiline() }}
+{{ embassy.name|nobreak }} \\
+{{ embassy.address|address_block }}
 {% endblock %}
 
 
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I would like to confirm that my {{ invitee.relationship }}, {{ invitee.full_name() }}, will apply for a UK visitor visa. {{ invitee.pronoun.subject.capitalize() }} will travel to the United~Kingdom from {{ date_format(trip.arrival_date) }} until {{ date_format(trip.departure_date) }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.name|names }}, will apply for a UK visitor visa. {{ invitee.pronoun.subject.capitalize() }} will travel to the United~Kingdom from {{ trip.arrival_date|date }} until {{ trip.departure_date|date }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
-I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.address.line() }}.
+I am able to accommodate {{ invitee.name|first_names }} at my place, {{ inviter.address|address_inline }}.
 {% if trip.financial_support %}
 {{ invitee.pronoun.subject.capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun.determiner }} journey will be met by me.
 {% else %}
@@ -35,11 +35,11 @@ I am able to accommodate {{ invitee.short_name() }} at my place, {{ inviter.addr
 While in the UK, {{ invitee.pronoun.subject }} will not engage in gainful employment.
 
 {% if trip.return_country or trip.return_reason %}
-After {{ invitee.pronoun.determiner }} trip to the UK, {{ invitee.short_name() }} will {% if trip.return_country %}return to {{ trip.return_country }}{% else %}leave the UK{% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
+After {{ invitee.pronoun.determiner }} trip to the UK, {{ invitee.name|first_names }} will {% if trip.return_country %}return to {{ trip.return_country }}{% else %}leave the UK{% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
 {% endif %}
 
 {% if employer %}
-I am currently employed at {{ employer.name.full_name() }}, {{ employer.address.line() }}.
+I am currently employed at {{ employer.name|nobreak }}, {{ employer.address|address_inline }}.
 {% endif %}
 
 I have enclosed the following documents:

@@ -9,8 +9,9 @@ from pydantic import ValidationError
 from pydantic_yaml import parse_yaml_raw_as
 from ruamel.yaml import YAMLError
 
+from .filters import FILTERS
 from .model import InvitationConfig
-from .util import date_format, fix_floating_punctuation, phone_format, tex_escape
+from .util import fix_floating_punctuation, tex_escape
 
 Engine = Literal["xelatex", "lualatex"]
 ENGINES: Final[tuple[Engine, ...]] = get_args(Engine)
@@ -32,6 +33,9 @@ _TEMPLATE_ENV: Final[jinja2.Environment] = jinja2.Environment(
     lstrip_blocks=True,
     finalize=_finalize,
 )
+if clash := FILTERS.keys() & _TEMPLATE_ENV.filters.keys():
+    raise RuntimeError(f"filter names shadow Jinja built-ins: {sorted(clash)}")
+_TEMPLATE_ENV.filters.update(FILTERS)
 
 
 def _format_validation_error(e: ValidationError) -> str:
@@ -66,8 +70,6 @@ def render_tex(config: InvitationConfig) -> str:
         embassy=config.embassy,
         trip=config.trip,
         docs=config.docs,
-        date_format=date_format,
-        phone_format=phone_format,
     )
     return fix_floating_punctuation(output_text)
 
