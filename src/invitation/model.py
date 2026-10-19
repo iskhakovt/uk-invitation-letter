@@ -42,31 +42,35 @@ class Name(RootModel):
         return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.root]))
 
 
-class Pronoun(BaseModel, frozen=True):
+_PRONOUN_HINT = "Pronouns must be written as three non-empty parts separated by `/`, e.g. `she/her/her`"
+
+
+class Pronoun(BaseModel, frozen=True, extra="forbid"):
     """The three forms a letter needs: `she` will travel, I will assist `her`, `her` savings.
 
     Written in the data file as `she/her/her`; `null` or omitted means they/them/their.
     """
 
     subject: NonBlankStr
-    object: NonBlankStr
+    object: NonBlankStr  # the grammatical object form; shadows nothing, annotations do not bind names
     determiner: NonBlankStr
 
     @model_validator(mode="before")
     @classmethod
     def from_slash_form(cls, value: object) -> object:
         if value is None:
-            return _THEY_FORMS
-        if not isinstance(value, str):
+            return THEY.model_dump()
+        if isinstance(value, Mapping):  # keyword construction from Python
             return value
-        parts = value.split("/")
-        if len(parts) != 3:
-            raise ValueError("write pronouns as three parts separated by `/`, e.g. `she/her/her`")
+        if not isinstance(value, str):
+            raise ValueError(_PRONOUN_HINT)
+        parts = [part.strip() for part in value.split("/")]
+        if len(parts) != 3 or not all(parts):
+            raise ValueError(_PRONOUN_HINT)
         return dict(zip(("subject", "object", "determiner"), parts, strict=True))
 
 
-_THEY_FORMS: Final[Mapping[str, str]] = {"subject": "they", "object": "them", "determiner": "their"}
-THEY: Final[Pronoun] = Pronoun.model_validate(_THEY_FORMS)
+THEY: Final[Pronoun] = Pronoun(subject="they", object="them", determiner="their")
 
 
 class Inviter(BaseModel):

@@ -60,6 +60,14 @@ class TestPronoun:
         with pytest.raises(ValidationError, match="e.g. `she/her/her`"):
             Pronoun.model_validate("she/her/her/hers")
 
+    def test_null_in_a_data_file_means_default(self) -> None:
+        data = {**MINIMAL_DATA, "invitee": {"name": "Bob", "relationship": "x", "pronoun": None}}
+        assert InvitationConfig.model_validate(data).invitee.pronoun == THEY
+
+    def test_mapping_with_unknown_key_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="typo"):
+            Pronoun.model_validate({"subject": "she", "object": "her", "determiner": "her", "typo": "x"})
+
 
 class TestInvitationConfig:
     def test_minimal_config_parses(self) -> None:
@@ -93,15 +101,11 @@ class TestWhitespaceAndBlanks:
         p = Pronoun.model_validate(" she / her / her ")
         assert (p.subject, p.object, p.determiner) == ("she", "her", "her")
 
-    @pytest.mark.parametrize("value", ["//", "she//her", " / / "])
-    def test_pronoun_blank_part_rejected(self, value: str) -> None:
-        with pytest.raises(ValidationError, match="at least 1 character"):
+    @pytest.mark.parametrize("value", ["//", "she//her", " / / ", ["she", "her", "her"], 42])
+    def test_pronoun_bad_input_gets_the_format_hint(self, value: object) -> None:
+        with pytest.raises(ValidationError, match="e.g. `she/her/her`") as info:
             Pronoun.model_validate(value)
-
-    @pytest.mark.parametrize("value", [["she", "her", "her"], 42])
-    def test_pronoun_wrong_type_rejected(self, value: object) -> None:
-        with pytest.raises(ValidationError):
-            Pronoun.model_validate(value)
+        assert [error["loc"] for error in info.value.errors()] == [()]
 
     def test_name_none_gets_a_hint(self) -> None:
         with pytest.raises(ValidationError, match="string or a list of strings"):
