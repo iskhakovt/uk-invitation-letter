@@ -5,7 +5,7 @@ from typing import Final
 
 import pytest
 
-from invitation.builder import ENGINES, Engine, build, required_tools
+from invitation.builder import Engine, build, required_tools
 from tests.data import REPO_ROOT
 
 FIXTURE_DIR: Final[pathlib.Path] = pathlib.Path(__file__).parent / "fixtures" / "render"
@@ -17,7 +17,7 @@ def _baseline(engine: Engine) -> pathlib.Path:
 
 
 @pytest.mark.render
-@pytest.mark.parametrize("engine", ENGINES)
+@pytest.mark.parametrize("engine", tuple(Engine), ids=str)
 def test_render_matches_baseline(
     tmp_path: pathlib.Path,
     example_data_file: pathlib.Path,

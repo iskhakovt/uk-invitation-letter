@@ -3,7 +3,7 @@ import pathlib
 import sys
 from collections.abc import Sequence
 
-from .builder import ENGINES, BuildError, build
+from .builder import BuildError, Engine, build
 from .template import load_template_yaml
 
 
@@ -16,8 +16,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     render.add_argument("--output", type=pathlib.Path, required=True, help="Output PDF path")
     render.add_argument(
         "--engine",
-        choices=ENGINES,
-        default="xelatex",
+        type=Engine,
+        choices=tuple(Engine),
+        default=Engine.XELATEX,
         help="TeX engine (default: xelatex). xelatex, lualatex and pdflatex run through latexmk; "
         "tectonic is self-contained and fetches packages itself.",
     )

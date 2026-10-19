@@ -181,16 +181,17 @@ class TestCompilePdf:
     def test_missing_tectonic_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr("invitation.builder.shutil.which", lambda _: None)
         with pytest.raises(BuildError, match="tectonic not found on PATH; install tectonic$"):
-            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", "tectonic")
+            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", Engine.TECTONIC)
 
     @pytest.mark.parametrize(
         ("engine", "head", "flag"),
         [
-            ("xelatex", "latexmk", "-xelatex"),
-            ("lualatex", "latexmk", "-lualatex"),
-            ("pdflatex", "latexmk", "-pdf"),
-            ("tectonic", "tectonic", "--outdir"),
+            (Engine.XELATEX, "latexmk", "-xelatex"),
+            (Engine.LUALATEX, "latexmk", "-lualatex"),
+            (Engine.PDFLATEX, "latexmk", "-pdf"),
+            (Engine.TECTONIC, "tectonic", "--outdir"),
         ],
+        ids=str,
     )
     def test_command_per_engine(
         self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, engine: Engine, head: str, flag: str
@@ -215,7 +216,7 @@ class TestCompilePdf:
             "invitation.builder.shutil.which", lambda tool: None if tool == "lualatex" else "/usr/bin/x"
         )
         with pytest.raises(BuildError, match="lualatex not found"):
-            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", "lualatex")
+            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", Engine.LUALATEX)
 
     def test_failed_latexmk_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr("invitation.builder.shutil.which", lambda _: "/usr/bin/latexmk")

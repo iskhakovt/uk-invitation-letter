@@ -3,7 +3,9 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable, Mapping
-from typing import Final, Literal, NamedTuple, get_args
+from dataclasses import dataclass
+from enum import StrEnum
+from typing import Final
 
 import jinja2
 from pydantic import ValidationError
@@ -14,8 +16,14 @@ from .filters import FILTERS
 from .model import InvitationConfig
 from .util import fix_floating_punctuation, tex_escape
 
-Engine = Literal["xelatex", "lualatex", "pdflatex", "tectonic"]
-ENGINES: Final[tuple[Engine, ...]] = get_args(Engine)
+
+class Engine(StrEnum):
+    XELATEX = "xelatex"
+    LUALATEX = "lualatex"
+    PDFLATEX = "pdflatex"
+    TECTONIC = "tectonic"
+
+
 Command = list[str | pathlib.Path]
 
 
@@ -31,18 +39,19 @@ def _tectonic(tex_file: pathlib.Path, out_dir: pathlib.Path) -> Command:
     return ["tectonic", "--outdir", out_dir, tex_file]
 
 
-class _Runner(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class _Runner:
     tools: tuple[str, ...]  # binaries that must be on PATH
     command: Callable[[pathlib.Path, pathlib.Path], Command]  # (tex file, output dir) -> argv
 
 
 _RUNNERS: Final[Mapping[Engine, _Runner]] = {
-    "xelatex": _Runner(("latexmk", "xelatex"), _latexmk("-xelatex")),
-    "lualatex": _Runner(("latexmk", "lualatex"), _latexmk("-lualatex")),
-    "pdflatex": _Runner(("latexmk", "pdflatex"), _latexmk("-pdf")),
-    "tectonic": _Runner(("tectonic",), _tectonic),
+    Engine.XELATEX: _Runner(("latexmk", "xelatex"), _latexmk("-xelatex")),
+    Engine.LUALATEX: _Runner(("latexmk", "lualatex"), _latexmk("-lualatex")),
+    Engine.PDFLATEX: _Runner(("latexmk", "pdflatex"), _latexmk("-pdf")),
+    Engine.TECTONIC: _Runner(("tectonic",), _tectonic),
 }
-assert tuple(_RUNNERS) == ENGINES
+assert _RUNNERS.keys() == set(Engine)
 
 
 class BuildError(Exception):
@@ -107,7 +116,7 @@ def required_tools(engine: Engine) -> tuple[str, ...]:
     return _RUNNERS[engine].tools
 
 
-def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xelatex") -> None:
+def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = Engine.XELATEX) -> None:
     """Compile LaTeX source with `engine` and move the resulting PDF to `output_file`."""
     runner = _RUNNERS[engine]
     for tool in runner.tools:
@@ -128,5 +137,5 @@ def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xe
         shutil.move(pdf_file, output_file)
 
 
-def build(config_file: pathlib.Path, output_file: pathlib.Path, engine: Engine = "xelatex") -> None:
+def build(config_file: pathlib.Path, output_file: pathlib.Path, engine: Engine = Engine.XELATEX) -> None:
     compile_pdf(render_tex(load_config(config_file)), output_file, engine)
