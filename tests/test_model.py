@@ -3,49 +3,37 @@ import datetime
 import pytest
 from pydantic import ValidationError
 
-from invitation.model import THEY, Address, InvitationConfig, Invitee, Name, Pronoun, Trip
+from invitation.model import THEY, Embassy, InvitationConfig, Invitee, Pronoun, Trip
 from tests.data import INVITER, MINIMAL_DATA, TRIP
 
 
-class TestAddress:
-    def test_line_joins_with_comma(self) -> None:
-        addr = Address(["10 Downing Street", "London SW1A 2AA"])
-        assert addr.line() == "10~Downing~Street, London~SW1A~2AA"
+class TestAddressAndName:
+    def test_lines_are_kept_as_given(self) -> None:
+        embassy = Embassy.model_validate({"name": "E", "address": ["10 Downing Street", " London SW1A 2AA "]})
+        assert embassy.address == ("10 Downing Street", "London SW1A 2AA")
 
-    def test_multiline_uses_latex_break(self) -> None:
-        addr = Address(["1 Example Road", "City"])
-        assert addr.multiline() == "1~Example~Road\\\\\nCity"
+    def test_empty_address_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="at least 1 item"):
+            Embassy.model_validate({"name": "E", "address": []})
 
-    def test_empty_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            Address([])
+    def test_blank_address_line_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="at least 1 character"):
+            Embassy.model_validate({"name": "E", "address": [" "]})
 
-
-class TestName:
-    def test_full_name_is_unbreakable(self) -> None:
-        assert Name("Alice Smith").full_name() == "Alice~Smith"
-
-    def test_empty_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            Name("")
+    def test_blank_name_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="at least 1 character"):
+            Embassy.model_validate({"name": "   ", "address": ["x"]})
 
 
 class TestInvitee:
     def test_single_name_shorthand(self) -> None:
         invitee = Invitee.model_validate({"name": "Alice Smith", "relationship": "friend"})
         assert invitee.name == ("Alice Smith",)
-        assert invitee.full_name() == "Alice~Smith"
-        assert invitee.short_name() == "Alice"
         assert invitee.pronoun == THEY
 
     def test_list_of_names(self) -> None:
         invitee = Invitee.model_validate({"name": ["Joseph Brodsky", "Maria Sozzani"], "relationship": "friends"})
-        assert invitee.full_name() == "Joseph~Brodsky and Maria~Sozzani"
-        assert invitee.short_name() == "Joseph and Maria"
-
-    def test_three_names_oxford_comma(self) -> None:
-        invitee = Invitee.model_validate({"name": ["Alice Smith", "Bob Jones", "Carol Lee"], "relationship": "x"})
-        assert invitee.full_name() == "Alice~Smith, Bob~Jones, and~Carol~Lee"
+        assert invitee.name == ("Joseph Brodsky", "Maria Sozzani")
 
     def test_single_person_uses_own_pronoun(self) -> None:
         invitee = Invitee.model_validate({"name": "Carol Lee", "pronoun": "she/her/her", "relationship": "mother"})
@@ -118,12 +106,6 @@ class TestWhitespaceAndBlanks:
     def test_blank_name_parts_rejected(self) -> None:
         with pytest.raises(ValidationError):
             Invitee.model_validate({"name": [""], "relationship": "x"})
-        with pytest.raises(ValidationError):
-            Name("   ")
-
-    def test_blank_address_line_rejected(self) -> None:
-        with pytest.raises(ValidationError):
-            Address([" "])
 
     def test_pronoun_parts_are_stripped(self) -> None:
         p = Pronoun.model_validate(" she / her / her ")
@@ -139,19 +121,6 @@ class TestWhitespaceAndBlanks:
         data = {**MINIMAL_DATA, "trip": {**TRIP, "reason": ""}}
         with pytest.raises(ValidationError):
             InvitationConfig.model_validate(data)
-
-
-class TestEscaping:
-    def test_name_methods_escape(self) -> None:
-        assert Name("Marks & Spencer").full_name() == "Marks~\\&~Spencer"
-        invitee = Invitee.model_validate({"name": ["Marks & Spencer", "Bob_Jones"], "relationship": "x"})
-        assert invitee.full_name() == "Marks~\\&~Spencer and Bob\\_Jones"
-        assert invitee.short_name() == "Marks and Bob\\_Jones"
-
-    def test_address_methods_escape(self) -> None:
-        addr = Address(["Flat #3", "100% Street"])
-        assert addr.line() == "Flat~\\#3, 100\\%~Street"
-        assert addr.multiline() == "Flat~\\#3\\\\\n100\\%~Street"
 
 
 class TestValidation:

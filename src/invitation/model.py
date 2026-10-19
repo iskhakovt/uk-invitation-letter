@@ -1,34 +1,17 @@
+"""What a letter is made of. Pure data: nothing here knows about LaTeX (see filters.py for that)."""
+
 import datetime
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Annotated, Final, Self
 
-from pydantic import BaseModel, BeforeValidator, Field, RootModel, StringConstraints, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, StringConstraints, field_validator, model_validator
 
-from .util import Tex, and_join, parse_phone, tex_nobreak
+from .util import parse_phone
 
 # Free text entered by the user. Leading/trailing whitespace is noise and blank values are mistakes.
 NonBlankStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-NonEmptyStrList = Annotated[list[NonBlankStr], Field(min_length=1)]
-
-
-class Address(RootModel):
-    root: NonEmptyStrList
-
-    def _lines(self) -> Sequence[Tex]:
-        return [tex_nobreak(line) for line in self.root]
-
-    def line(self) -> Tex:
-        return Tex(", ".join(self._lines()))
-
-    def multiline(self) -> Tex:
-        return Tex("\\\\\n".join(self._lines()))
-
-
-class Name(RootModel):
-    root: NonBlankStr
-
-    def full_name(self) -> Tex:
-        return tex_nobreak(self.root)
+# Postal address, one line per entry.
+Address = Annotated[tuple[NonBlankStr, ...], Field(min_length=1)]
 
 
 def _one_or_many(value: object) -> object:
@@ -70,7 +53,7 @@ THEY: Final[Pronoun] = Pronoun(subject="they", object="them", determiner="their"
 
 
 class Inviter(BaseModel):
-    name: Name
+    name: NonBlankStr
     address: Address
     phone: NonBlankStr
     email: NonBlankStr
@@ -105,20 +88,14 @@ class Invitee(BaseModel):
             raise ValueError("pronoun applies to a single invitee; a group is always referred to as they/them/their")
         return self
 
-    def full_name(self) -> Tex:
-        return Tex(and_join([tex_nobreak(name) for name in self.name]))
-
-    def short_name(self) -> Tex:
-        return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.name]))
-
 
 class Employer(BaseModel):
-    name: Name
+    name: NonBlankStr
     address: Address
 
 
 class Embassy(BaseModel):
-    name: Name
+    name: NonBlankStr
     address: Address
 
 
