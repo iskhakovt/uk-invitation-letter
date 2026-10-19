@@ -1,30 +1,38 @@
 """Jinja filters that turn model values into LaTeX.
 
 The model describes the data and knows nothing about LaTeX; everything that
-produces markup, escaping, non-breaking spaces or name joining, lives here.
-Every filter returns `Tex`, which the template environment passes through
-unescaped (see builder.py).
+produces markup (escaping, non-breaking spaces, name joining, date and phone
+formatting) lives here. Every filter returns `Tex`, which the template
+environment passes through unescaped (see builder.py).
 """
 
+import datetime
 from collections.abc import Callable, Mapping, Sequence
 from typing import Final
 
-from .util import Tex, and_join, date_format, phone_format, tex_nobreak
+import phonenumbers
+
+from .util import Tex, parse_phone, tex_nobreak, use_non_breaking_space
 
 
-def nobreak(text: str) -> Tex:
-    """A short phrase such as a name, kept on one line."""
-    return tex_nobreak(text)
+def _and_join(items: Sequence[str]) -> str:
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return ", ".join(items[:-1]) + ", and~" + items[-1]
 
 
 def names(full_names: Sequence[str]) -> Tex:
     """Full names joined with `and`, e.g. `Joseph~Brodsky and Maria~Sozzani`."""
-    return Tex(and_join([tex_nobreak(name) for name in full_names]))
+    return Tex(_and_join([tex_nobreak(name) for name in full_names]))
 
 
 def first_names(full_names: Sequence[str]) -> Tex:
     """First names joined with `and`, e.g. `Joseph and Maria`."""
-    return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in full_names]))
+    return Tex(_and_join([tex_nobreak(name.split()[0]) for name in full_names]))
 
 
 def address_inline(lines: Sequence[str]) -> Tex:
@@ -37,12 +45,42 @@ def address_block(lines: Sequence[str]) -> Tex:
     return Tex("\\\\\n".join(tex_nobreak(line) for line in lines))
 
 
+# Hard-coded so month names don't depend on the host's LC_TIME (strftime("%B")
+# is locale-coupled). Babel would solve it with CLDR data but costs ~10 MB for
+# one locale — the product only ever emits British English.
+_MONTHS: Final[tuple[str, ...]] = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
+
+
+def date(value: datetime.date) -> Tex:
+    """`5~January~2026`: day without a leading zero, month in British English."""
+    return Tex(f"{value.day}~{_MONTHS[value.month - 1]}~{value.year}")
+
+
+def phone(number: str) -> Tex:
+    """UK national format with non-breaking spaces, e.g. `07758~888305`."""
+    national = phonenumbers.format_number(parse_phone(number), phonenumbers.PhoneNumberFormat.NATIONAL)
+    return Tex(use_non_breaking_space(national))
+
+
 FILTERS: Final[Mapping[str, Callable[..., Tex]]] = {
-    "nobreak": nobreak,
+    "nobreak": tex_nobreak,
     "names": names,
     "first_names": first_names,
     "address_inline": address_inline,
     "address_block": address_block,
-    "date": date_format,
-    "phone": phone_format,
+    "date": date,
+    "phone": phone,
 }

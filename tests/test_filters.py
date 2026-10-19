@@ -1,8 +1,9 @@
 import datetime
 
-from invitation.builder import _TEMPLATE_ENV
-from invitation.filters import FILTERS, address_block, address_inline, first_names, names, nobreak
-from invitation.util import Tex
+import pytest
+
+from invitation.filters import FILTERS, address_block, address_inline, date, first_names, names, phone
+from invitation.util import Tex, tex_nobreak
 
 
 class TestNames:
@@ -14,11 +15,16 @@ class TestNames:
         assert names(("Joseph Brodsky", "Maria Sozzani")) == "Joseph~Brodsky and Maria~Sozzani"
         assert first_names(("Joseph Brodsky", "Maria Sozzani")) == "Joseph and Maria"
 
-    def test_three_use_oxford_comma(self) -> None:
+    def test_three_use_oxford_comma_and_nbsp(self) -> None:
         assert names(("Alice Smith", "Bob Jones", "Carol Lee")) == "Alice~Smith, Bob~Jones, and~Carol~Lee"
+        assert first_names(("A B", "C D", "E F", "G H")) == "A, C, E, and~G"
 
     def test_typed_tilde_keeps_first_name_together(self) -> None:
         assert first_names(("Mary~Ann Smith",)) == "Mary~Ann"
+
+    @pytest.mark.parametrize("space", ["\t", "\u00a0", "  "])
+    def test_first_name_ends_at_any_whitespace(self, space: str) -> None:
+        assert first_names((f"Alice{space}Smith",)) == "Alice"
 
     def test_escaped(self) -> None:
         assert names(("Marks & Spencer", "Bob_Jones")) == "Marks~\\&~Spencer and Bob\\_Jones"
@@ -37,10 +43,42 @@ class TestAddress:
         assert address_block(("Flat #3", "100% Street")) == "Flat~\\#3\\\\\n100\\%~Street"
 
 
-class TestRegistration:
-    def test_every_filter_is_registered_and_returns_tex(self) -> None:
-        for name, fn in FILTERS.items():
-            assert _TEMPLATE_ENV.filters[name] is fn
-        assert isinstance(nobreak("x y"), Tex)
-        assert isinstance(FILTERS["date"](datetime.date(2026, 1, 5)), Tex)
-        assert isinstance(FILTERS["phone"]("07758888305"), Tex)
+class TestDate:
+    def test_single_digit_day_has_no_leading_zero(self) -> None:
+        assert date(datetime.date(2026, 1, 5)) == "5~January~2026"
+
+    def test_two_digit_day(self) -> None:
+        assert date(datetime.date(2026, 12, 25)) == "25~December~2026"
+
+
+class TestPhone:
+    def test_uk_mobile(self) -> None:
+        assert phone("07758888305") == "07758~888305"
+
+    def test_with_country_code(self) -> None:
+        assert phone("+447758888305") == "07758~888305"
+
+    def test_rejects_garbage(self) -> None:
+        with pytest.raises(ValueError):
+            phone("call me")
+
+
+SAMPLE_CALLS: dict[str, tuple[object, ...]] = {
+    "nobreak": ("a b",),
+    "names": (("A B", "C D"),),
+    "first_names": (("A B", "C D"),),
+    "address_inline": (("1 Road", "Town"),),
+    "address_block": (("1 Road", "Town"),),
+    "date": (datetime.date(2026, 1, 5),),
+    "phone": ("07758888305",),
+}
+
+
+class TestEveryFilter:
+    def test_table_and_samples_cover_the_same_filters(self) -> None:
+        assert SAMPLE_CALLS.keys() == FILTERS.keys()
+        assert FILTERS["nobreak"] is tex_nobreak
+
+    @pytest.mark.parametrize("name", sorted(SAMPLE_CALLS))
+    def test_returns_tex(self, name: str) -> None:
+        assert isinstance(FILTERS[name](*SAMPLE_CALLS[name]), Tex)

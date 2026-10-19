@@ -1,35 +1,6 @@
-import datetime
-
 import pytest
 
-from invitation.util import (
-    Tex,
-    and_join,
-    date_format,
-    fix_floating_punctuation,
-    parse_phone,
-    phone_format,
-    tex_escape,
-    tex_nobreak,
-    use_non_breaking_space,
-)
-
-
-class TestAndJoin:
-    def test_empty(self) -> None:
-        assert and_join([]) == ""
-
-    def test_single(self) -> None:
-        assert and_join(["Alice"]) == "Alice"
-
-    def test_two(self) -> None:
-        assert and_join(["Alice", "Bob"]) == "Alice and Bob"
-
-    def test_three_uses_oxford_comma_and_nbsp(self) -> None:
-        assert and_join(["Alice", "Bob", "Carol"]) == "Alice, Bob, and~Carol"
-
-    def test_four(self) -> None:
-        assert and_join(["A", "B", "C", "D"]) == "A, B, C, and~D"
+from invitation.util import Tex, fix_floating_punctuation, parse_phone, tex_escape, tex_nobreak, use_non_breaking_space
 
 
 class TestUseNonBreakingSpace:
@@ -41,22 +12,6 @@ class TestUseNonBreakingSpace:
 
     def test_empty(self) -> None:
         assert use_non_breaking_space("") == ""
-
-
-class TestDateFormat:
-    def test_single_digit_day_has_no_leading_zero(self) -> None:
-        assert date_format(datetime.date(2026, 1, 5)) == "5~January~2026"
-
-    def test_two_digit_day(self) -> None:
-        assert date_format(datetime.date(2026, 12, 25)) == "25~December~2026"
-
-
-class TestPhoneFormat:
-    def test_uk_mobile(self) -> None:
-        assert phone_format("07758888305") == "07758~888305"
-
-    def test_with_country_code(self) -> None:
-        assert phone_format("+447758888305") == "07758~888305"
 
 
 class TestFixFloatingPunctuation:
@@ -114,7 +69,3 @@ class TestParsePhone:
     def test_not_a_number(self) -> None:
         with pytest.raises(ValueError, match="not a phone number"):
             parse_phone("call me")
-
-    def test_phone_format_rejects_garbage(self) -> None:
-        with pytest.raises(ValueError):
-            phone_format("call me")

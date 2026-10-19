@@ -33,6 +33,7 @@ _TEMPLATE_ENV: Final[jinja2.Environment] = jinja2.Environment(
     lstrip_blocks=True,
     finalize=_finalize,
 )
+assert not FILTERS.keys() & _TEMPLATE_ENV.filters.keys(), "a filter name shadows a Jinja built-in"
 _TEMPLATE_ENV.filters.update(FILTERS)
 
 

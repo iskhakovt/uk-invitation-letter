@@ -1,6 +1,5 @@
-import datetime
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Final
 
 import phonenumbers
@@ -9,12 +8,13 @@ import phonenumbers
 class Tex(str):
     """A string that is already valid LaTeX and must not be escaped again.
 
-    Everything else that reaches the template is escaped automatically (see
-    builder.py), so model methods that emit LaTeX markup return this type.
+    Every `{{ ... }}` expression in a template is escaped automatically (see
+    builder.py) unless it is a `Tex`. The Jinja filters in filters.py are the
+    only producers of `Tex`; the model is plain data.
 
     Like any `str` subclass, string operations on it (`+`, `.upper()`, slicing,
-    Jinja filters) return a plain `str`, which would then be escaped a second
-    time. Transform text *before* escaping it. The escaping test in
+    Jinja's built-in filters) return a plain `str`, which would then be escaped
+    a second time. Transform text *before* escaping it. The escaping test in
     tests/test_builder.py asserts that no double-escaped sequence reaches the
     output of a letter whose every field contains special characters.
     """
@@ -61,39 +61,6 @@ def tex_nobreak(s: str) -> Tex:
     return Tex(use_non_breaking_space(s))
 
 
-def and_join(strs: Sequence[str]) -> str:
-    if not strs:
-        return ""
-    if len(strs) == 1:
-        return strs[0]
-    if len(strs) == 2:
-        return f"{strs[0]} and {strs[1]}"
-    return ", ".join(strs[:-1]) + ", and~" + strs[-1]
-
-
-# Hard-coded so month names don't depend on the host's LC_TIME (strftime("%B")
-# is locale-coupled). Babel would solve it with CLDR data but costs ~10 MB for
-# one locale — the product only ever emits British English.
-_MONTHS: Final[tuple[str, ...]] = (
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-)
-
-
-def date_format(date: datetime.date) -> Tex:
-    return Tex(f"{date.day}~{_MONTHS[date.month - 1]}~{date.year}")
-
-
 def parse_phone(phone: str) -> phonenumbers.PhoneNumber:
     """Parse a phone number, defaulting to UK dialling rules.
 
@@ -109,12 +76,6 @@ def parse_phone(phone: str) -> phonenumbers.PhoneNumber:
     if reason != phonenumbers.ValidationResult.IS_POSSIBLE:
         raise ValueError(f"{phone!r} is not a possible phone number (wrong number of digits?)")
     return number
-
-
-def phone_format(phone: str) -> Tex:
-    return Tex(
-        use_non_breaking_space(phonenumbers.format_number(parse_phone(phone), phonenumbers.PhoneNumberFormat.NATIONAL))
-    )
 
 
 def fix_floating_punctuation(s: str) -> str:
