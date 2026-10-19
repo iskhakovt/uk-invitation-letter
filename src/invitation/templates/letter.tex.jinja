@@ -1,5 +1,9 @@
 \documentclass{letter}
 \usepackage[a4paper, total={6in, 10in}]{geometry}
+% T1 gives pdfLaTeX proper accented glyphs and hyphenation with the Type 1
+% Garamond Libre; under XeLaTeX and LuaLaTeX, garamondlibre loads fontspec,
+% which switches to the Unicode encoding, so it is harmless there.
+\usepackage[T1]{fontenc}
 \usepackage{garamondlibre}
 
 \usepackage[UKenglish]{babel}

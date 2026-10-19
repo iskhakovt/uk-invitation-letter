@@ -13,11 +13,22 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Record baseline outputs for render tests instead of comparing against them",
     )
+    parser.addoption(
+        "--require-engines",
+        action="store_true",
+        default=False,
+        help="Fail, rather than skip, render tests whose TeX engine is not installed",
+    )
 
 
 @pytest.fixture
 def record_baselines(request: pytest.FixtureRequest) -> bool:
     return request.config.getoption("--record-baselines")
+
+
+@pytest.fixture
+def require_engines(request: pytest.FixtureRequest) -> bool:
+    return request.config.getoption("--require-engines")
 
 
 @pytest.fixture(scope="session")

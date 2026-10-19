@@ -2,7 +2,10 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
-from typing import Final, Literal, get_args
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from enum import StrEnum
+from typing import Final
 
 import jinja2
 from pydantic import ValidationError
@@ -13,8 +16,42 @@ from .filters import FILTERS
 from .model import InvitationConfig
 from .util import fix_floating_punctuation, tex_escape
 
-Engine = Literal["xelatex", "lualatex"]
-ENGINES: Final[tuple[Engine, ...]] = get_args(Engine)
+
+class Engine(StrEnum):
+    XELATEX = "xelatex"
+    LUALATEX = "lualatex"
+    PDFLATEX = "pdflatex"
+    TECTONIC = "tectonic"
+
+
+Command = list[str | pathlib.Path]
+
+
+def _latexmk(flag: str) -> Callable[[pathlib.Path, pathlib.Path], Command]:
+    def command(tex_file: pathlib.Path, out_dir: pathlib.Path) -> Command:
+        return ["latexmk", flag, "-interaction=nonstopmode", "-halt-on-error", f"-output-directory={out_dir}", tex_file]
+
+    return command
+
+
+def _tectonic(tex_file: pathlib.Path, out_dir: pathlib.Path) -> Command:
+    # Tectonic is a self-contained XeTeX; it fetches packages itself and needs no latexmk.
+    return ["tectonic", "--outdir", out_dir, tex_file]
+
+
+@dataclass(frozen=True, slots=True)
+class _Runner:
+    tools: tuple[str, ...]  # binaries that must be on PATH
+    command: Callable[[pathlib.Path, pathlib.Path], Command]  # (tex file, output dir) -> argv
+
+
+_RUNNERS: Final[Mapping[Engine, _Runner]] = {
+    Engine.XELATEX: _Runner(("latexmk", "xelatex"), _latexmk("-xelatex")),
+    Engine.LUALATEX: _Runner(("latexmk", "lualatex"), _latexmk("-lualatex")),
+    Engine.PDFLATEX: _Runner(("latexmk", "pdflatex"), _latexmk("-pdf")),
+    Engine.TECTONIC: _Runner(("tectonic",), _tectonic),
+}
+assert _RUNNERS.keys() == set(Engine)
 
 
 class BuildError(Exception):
@@ -74,11 +111,17 @@ def render_tex(config: InvitationConfig) -> str:
     return fix_floating_punctuation(output_text)
 
 
-def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xelatex") -> None:
-    """Compile LaTeX source with latexmk and move the resulting PDF to `output_file`."""
-    for tool in ("latexmk", engine):
+def required_tools(engine: Engine) -> tuple[str, ...]:
+    """The binaries `engine` needs on PATH."""
+    return _RUNNERS[engine].tools
+
+
+def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = Engine.XELATEX) -> None:
+    """Compile LaTeX source with `engine` and move the resulting PDF to `output_file`."""
+    runner = _RUNNERS[engine]
+    for tool in runner.tools:
         if shutil.which(tool) is None:
-            raise BuildError(f"{tool} not found on PATH; install a TeX distribution that provides latexmk and {engine}")
+            raise BuildError(f"{tool} not found on PATH; install " + " and ".join(runner.tools))
 
     with tempfile.TemporaryDirectory() as temp_dir_name:
         temp_dir = pathlib.Path(temp_dir_name)
@@ -86,22 +129,13 @@ def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xe
         pdf_file = temp_dir / "invitation.pdf"
 
         tex_file.write_text(tex_source, encoding="utf-8")
-        result = subprocess.run(
-            [
-                "latexmk",
-                f"-{engine}",
-                "-interaction=nonstopmode",
-                "-halt-on-error",
-                f"-output-directory={temp_dir}",
-                tex_file,
-            ],
-        )
+        result = subprocess.run(runner.command(tex_file, temp_dir))
         if result.returncode != 0:
-            raise BuildError(f"latexmk exited with status {result.returncode}; see the LaTeX output above")
+            raise BuildError(f"{runner.tools[0]} exited with status {result.returncode}; see the LaTeX output above")
 
         output_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(pdf_file, output_file)
 
 
-def build(config_file: pathlib.Path, output_file: pathlib.Path, engine: Engine = "xelatex") -> None:
+def build(config_file: pathlib.Path, output_file: pathlib.Path, engine: Engine = Engine.XELATEX) -> None:
     compile_pdf(render_tex(load_config(config_file)), output_file, engine)

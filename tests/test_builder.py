@@ -6,7 +6,7 @@ from typing import Final
 import pytest
 from pydantic_yaml import parse_yaml_raw_as
 
-from invitation.builder import BuildError, compile_pdf, load_config, render_tex
+from invitation.builder import BuildError, Engine, compile_pdf, load_config, render_tex
 from invitation.model import InvitationConfig
 from tests.data import INVITER, MINIMAL_DATA, TRIP
 
@@ -20,11 +20,11 @@ def render(data: Mapping[str, object]) -> str:
 class TestReadmeExample:
     def test_renders_expected_sentences(self, readme_example_yaml: str) -> None:
         tex = render_tex(parse_yaml_raw_as(InvitationConfig, readme_example_yaml))
-        assert "my friends, Joseph~Brodsky and Maria~Sozzani, will apply for a UK visitor visa" in tex
+        assert "my friends, Joseph~Brodsky and María~Sozzani, will apply for a UK visitor visa" in tex
         assert "from 1~January~2026 until 31~January~2026 for a short trip." in tex
-        assert "I am able to accommodate Joseph and Maria at my place, 75~Hertingfordbury~Road, Newton~NG13~8QY." in tex
+        assert "I am able to accommodate Joseph and María at my place, 75~Hertingfordbury~Road, Newton~NG13~8QY." in tex
         assert "They will use their savings for the trip, and I will assist them" in tex
-        assert "Joseph and Maria will return to the US to circumnavigate the globe." in tex
+        assert "Joseph and María will return to the US to circumnavigate the globe." in tex
         assert "I am currently employed at Jstory~UK~Ltd, 89~Well~Lane, Patterdale~CA11~0LQ." in tex
         assert "\\item immigration status share code" in tex
         assert "\\item employment reference" in tex
@@ -178,12 +178,45 @@ class TestCompilePdf:
         with pytest.raises(BuildError, match="latexmk not found"):
             compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf")
 
+    def test_missing_tectonic_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("invitation.builder.shutil.which", lambda _: None)
+        with pytest.raises(BuildError, match="tectonic not found on PATH; install tectonic$"):
+            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", Engine.TECTONIC)
+
+    @pytest.mark.parametrize(
+        ("engine", "head", "flag"),
+        [
+            (Engine.XELATEX, "latexmk", "-xelatex"),
+            (Engine.LUALATEX, "latexmk", "-lualatex"),
+            (Engine.PDFLATEX, "latexmk", "-pdf"),
+            (Engine.TECTONIC, "tectonic", "--outdir"),
+        ],
+        ids=str,
+    )
+    def test_command_per_engine(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, engine: Engine, head: str, flag: str
+    ) -> None:
+        seen: list[list[object]] = []
+
+        def fake_run(command: list[object], **_: object) -> object:
+            seen.append(command)
+            pathlib.Path(str(command[-1])).with_suffix(".pdf").write_bytes(b"%PDF")
+            return type("Result", (), {"returncode": 0})()
+
+        monkeypatch.setattr("invitation.builder.shutil.which", lambda _: "/usr/bin/x")
+        monkeypatch.setattr("invitation.builder.subprocess.run", fake_run)
+        compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", engine)
+        (command,) = seen
+        assert command[0] == head
+        assert flag in command
+        assert (tmp_path / "out.pdf").read_bytes() == b"%PDF"
+
     def test_missing_engine_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "invitation.builder.shutil.which", lambda tool: None if tool == "lualatex" else "/usr/bin/x"
         )
         with pytest.raises(BuildError, match="lualatex not found"):
-            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", "lualatex")
+            compile_pdf("\\documentclass{letter}", tmp_path / "out.pdf", Engine.LUALATEX)
 
     def test_failed_latexmk_is_reported(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr("invitation.builder.shutil.which", lambda _: "/usr/bin/latexmk")

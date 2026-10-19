@@ -7,8 +7,12 @@ Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitat
 
 ### Requirements
 
-* Python 3 with [pipx](https://pipx.pypa.io/)
-* LaTeX with OpenType font support, e.g. XeLaTeX, and latexmk
+* Python 3.11 or newer
+* One of:
+  * [Tectonic](https://tectonic-typesetting.github.io/), a single binary that fetches the LaTeX packages it needs by itself
+  * A TeX distribution with `latexmk`, one of XeLaTeX, LuaLaTeX or pdfLaTeX, and the `garamond-libre`, `isodate`, `substr` and `fontaxes` packages (`tlmgr install garamond-libre isodate substr fontaxes`)
+
+The examples below run the tool with [pipx](https://pipx.pypa.io/); `uvx uk-invitation-letter` or a plain `pip install` work just as well.
 
 ### Usage
 
@@ -48,7 +52,7 @@ embassy:
 invitee:
   name:  # <first name> [<other names>]+ <last name>
     - Joseph Brodsky
-    - Maria Sozzani
+    - María Sozzani
   pronoun: they/them/their  # optional, e.g. she/her/her for a single invitee; a group is always they/them/their
   relationship: friends
 
@@ -70,7 +74,7 @@ docs:  # optional extra documents
 pipx run uk-invitation-letter render --data data.yml --output invitation.pdf
 ```
 
-The output will be saved to `invitation.pdf`. Pass `--engine lualatex` if you prefer LuaLaTeX (default is XeLaTeX).
+The output will be saved to `invitation.pdf`. The default engine is XeLaTeX; pass `--engine tectonic`, `--engine lualatex` or `--engine pdflatex` to use another. pdfLaTeX uses Type 1 fonts with the T1 encoding, so it handles Latin-script text (including accents) but not other scripts; use one of the other engines for those.
 
 Text from the data file is escaped for LaTeX automatically, so `&`, `%`, `#`, `_`, `~` and friends render literally. Names and address lines are never broken across lines. In those fields only, a `~` you type is kept as a non-breaking space: write `Mary~Ann Smith` so the short form of the name stays "Mary~Ann" rather than "Mary".
 
