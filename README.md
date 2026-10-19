@@ -49,7 +49,7 @@ invitee:
   name:  # <first name> [<other names>]+ <last name>
     - Joseph Brodsky
     - Maria Sozzani
-  pronoun: they/them/their  # optional, they/them/their by default
+  pronoun: they/them/their  # optional, e.g. she/her/her for a single invitee; a group is always they/them/their
   relationship: friends
 
 trip:
