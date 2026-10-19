@@ -1,5 +1,23 @@
 version: 2.1
 
+# Releases are not cut on every merge. To release the head of main, trigger a
+# pipeline on main with the `release` parameter set to true:
+#
+#   Web app: project Pipelines page -> "Trigger Pipeline" -> branch main ->
+#   "Add +" parameter `release` (boolean) = true -> "Run Pipeline".
+#
+#   API: POST https://circleci.com/api/v2/project/<provider>/<org>/<repo>/pipeline/run
+#   with body {"definition_id": "<from Project Settings > Pipelines>",
+#   "config": {"branch": "main"}, "checkout": {"branch": "main"},
+#   "parameters": {"release": true}}. See docs/guides/orchestrate/triggers-overview.
+#
+# The `release` workflow re-runs the tests, then semantic-release versions from
+# every commit since the last tag and pushes the tag, which runs `cd` below.
+parameters:
+  release:
+    type: boolean
+    default: false
+
 orbs:
   python: circleci/python@4.0.0
 
@@ -80,10 +98,29 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - run: npx -y -p semantic-release@25.0.3 -p conventional-changelog-conventionalcommits@9.3.1 semantic-release
+      # conventional-changelog-conventionalcommits stays on 9.x: 10.x needs
+      # conventional-changelog-writer@9, and release-notes-generator still
+      # ships writer 8. Bump them together.
+      - run: |
+          npx -y \
+            -p semantic-release@25.0.9 \
+            -p @semantic-release/commit-analyzer@13.0.1 \
+            -p @semantic-release/release-notes-generator@14.1.1 \
+            -p @semantic-release/github@12.0.10 \
+            -p conventional-changelog-conventionalcommits@9.3.1 \
+            semantic-release
 
 workflows:
   ci:
+    unless: << pipeline.parameters.release >>
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              python-version: ["3.11", "3.14"]
+      - render-test
+  release:
+    when: << pipeline.parameters.release >>
     jobs:
       - test:
           matrix:
