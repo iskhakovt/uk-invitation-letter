@@ -24,22 +24,18 @@ class Address(RootModel):
         return Tex("\\\\\n".join(self._lines()))
 
 
-def _one_or_many(value: object) -> object:
-    if value is None:
-        raise ValueError("Name must be a string or a list of strings")
-    return [value] if isinstance(value, str) else value
-
-
 class Name(RootModel):
-    """One name, or several for a joint letter. A single string is accepted as shorthand for a one-item list."""
-
-    root: Annotated[NonEmptyStrList, BeforeValidator(_one_or_many)]
+    root: NonBlankStr
 
     def full_name(self) -> Tex:
-        return Tex(and_join([tex_nobreak(name) for name in self.root]))
+        return tex_nobreak(self.root)
 
-    def short_name(self) -> Tex:
-        return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.root]))
+
+def _one_or_many(value: object) -> object:
+    """`name: Alice Smith` is shorthand for `name: [Alice Smith]`."""
+    if value is None:
+        raise ValueError("name must be a string or a list of strings")
+    return [value] if isinstance(value, str) else value
 
 
 _PRONOUN_HINT = "Pronouns must be written as three non-empty parts separated by `/`, e.g. `she/her/her`"
@@ -89,9 +85,31 @@ class Inviter(BaseModel):
 
 
 class Invitee(BaseModel):
-    name: Name
+    """The person or people being invited, and how the inviter knows them (`friend`, `parents`, ...)."""
+
+    name: Annotated[tuple[NonBlankStr, ...], BeforeValidator(_one_or_many)]
     pronoun: Pronoun = THEY
     relationship: NonBlankStr
+
+    @field_validator("name")
+    @classmethod
+    def check_someone_is_invited(cls, name: tuple[str, ...]) -> tuple[str, ...]:
+        if not name:
+            raise ValueError("at least one person must be invited")
+        return name
+
+    @model_validator(mode="after")
+    def check_pronoun_fits(self) -> Self:
+        # The letter refers to a group as they/them/their, so a pronoun only means something for one person.
+        if len(self.name) > 1 and self.pronoun != THEY:
+            raise ValueError("pronoun applies to a single invitee; a group is always referred to as they/them/their")
+        return self
+
+    def full_name(self) -> Tex:
+        return Tex(and_join([tex_nobreak(name) for name in self.name]))
+
+    def short_name(self) -> Tex:
+        return Tex(and_join([tex_nobreak(name.split(" ")[0]) for name in self.name]))
 
 
 class Employer(BaseModel):

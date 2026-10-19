@@ -3,7 +3,7 @@ import datetime
 import pytest
 from pydantic import ValidationError
 
-from invitation.model import THEY, Address, InvitationConfig, Name, Pronoun, Trip
+from invitation.model import THEY, Address, InvitationConfig, Invitee, Name, Pronoun, Trip
 from tests.data import INVITER, MINIMAL_DATA, TRIP
 
 
@@ -22,25 +22,52 @@ class TestAddress:
 
 
 class TestName:
-    def test_single_string(self) -> None:
-        name = Name("Alice Smith")
-        assert name.full_name() == "Alice~Smith"
-        assert name.short_name() == "Alice"
-
-    def test_list_of_names(self) -> None:
-        name = Name(["Joseph Brodsky", "Maria Sozzani"])
-        assert name.full_name() == "Joseph~Brodsky and Maria~Sozzani"
-        assert name.short_name() == "Joseph and Maria"
-
-    def test_three_names_oxford_comma(self) -> None:
-        name = Name(["Alice Smith", "Bob Jones", "Carol Lee"])
-        assert name.full_name() == "Alice~Smith, Bob~Jones, and~Carol~Lee"
+    def test_full_name_is_unbreakable(self) -> None:
+        assert Name("Alice Smith").full_name() == "Alice~Smith"
 
     def test_empty_rejected(self) -> None:
         with pytest.raises(ValidationError):
             Name("")
-        with pytest.raises(ValidationError):
-            Name([])
+
+
+class TestInvitee:
+    def test_single_name_shorthand(self) -> None:
+        invitee = Invitee.model_validate({"name": "Alice Smith", "relationship": "friend"})
+        assert invitee.name == ("Alice Smith",)
+        assert invitee.full_name() == "Alice~Smith"
+        assert invitee.short_name() == "Alice"
+        assert invitee.pronoun == THEY
+
+    def test_list_of_names(self) -> None:
+        invitee = Invitee.model_validate({"name": ["Joseph Brodsky", "Maria Sozzani"], "relationship": "friends"})
+        assert invitee.full_name() == "Joseph~Brodsky and Maria~Sozzani"
+        assert invitee.short_name() == "Joseph and Maria"
+
+    def test_three_names_oxford_comma(self) -> None:
+        invitee = Invitee.model_validate({"name": ["Alice Smith", "Bob Jones", "Carol Lee"], "relationship": "x"})
+        assert invitee.full_name() == "Alice~Smith, Bob~Jones, and~Carol~Lee"
+
+    def test_single_person_uses_own_pronoun(self) -> None:
+        invitee = Invitee.model_validate({"name": "Carol Lee", "pronoun": "she/her/her", "relationship": "mother"})
+        assert invitee.pronoun.subject == "she"
+
+    def test_group_may_state_the_default(self) -> None:
+        invitee = Invitee.model_validate({"name": ["A", "B"], "pronoun": "they/them/their", "relationship": "x"})
+        assert invitee.pronoun == THEY
+
+    @pytest.mark.parametrize(
+        ("data", "hint"),
+        [
+            ({"name": ["A", "B"], "pronoun": "she/her/her", "relationship": "x"}, "applies to a single invitee"),
+            ({"name": "", "relationship": "x"}, r"name\.0\n  String should have at least 1 character"),
+            ({"name": [], "relationship": "x"}, "at least one person"),
+            ({"name": None, "relationship": "x"}, "string or a list of strings"),
+            ({"relationship": "x"}, "name"),
+        ],
+    )
+    def test_bad_input(self, data: dict[str, object], hint: str) -> None:
+        with pytest.raises(ValidationError, match=hint):
+            Invitee.model_validate(data)
 
 
 class TestPronoun:
@@ -85,11 +112,12 @@ class TestInvitationConfig:
 
 class TestWhitespaceAndBlanks:
     def test_name_is_stripped(self) -> None:
-        assert Name("  Alice Smith ").short_name() == "Alice"
+        invitee = Invitee.model_validate({"name": "  Alice Smith ", "relationship": "x"})
+        assert invitee.name == ("Alice Smith",)
 
     def test_blank_name_parts_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            Name([""])
+            Invitee.model_validate({"name": [""], "relationship": "x"})
         with pytest.raises(ValidationError):
             Name("   ")
 
@@ -107,10 +135,6 @@ class TestWhitespaceAndBlanks:
             Pronoun.model_validate(value)
         assert [error["loc"] for error in info.value.errors()] == [()]
 
-    def test_name_none_gets_a_hint(self) -> None:
-        with pytest.raises(ValidationError, match="string or a list of strings"):
-            Name(None)
-
     def test_blank_optional_text_rejected(self) -> None:
         data = {**MINIMAL_DATA, "trip": {**TRIP, "reason": ""}}
         with pytest.raises(ValidationError):
@@ -119,9 +143,10 @@ class TestWhitespaceAndBlanks:
 
 class TestEscaping:
     def test_name_methods_escape(self) -> None:
-        name = Name(["Marks & Spencer", "Bob_Jones"])
-        assert name.full_name() == "Marks~\\&~Spencer and Bob\\_Jones"
-        assert name.short_name() == "Marks and Bob\\_Jones"
+        assert Name("Marks & Spencer").full_name() == "Marks~\\&~Spencer"
+        invitee = Invitee.model_validate({"name": ["Marks & Spencer", "Bob_Jones"], "relationship": "x"})
+        assert invitee.full_name() == "Marks~\\&~Spencer and Bob\\_Jones"
+        assert invitee.short_name() == "Marks and Bob\\_Jones"
 
     def test_address_methods_escape(self) -> None:
         addr = Address(["Flat #3", "100% Street"])

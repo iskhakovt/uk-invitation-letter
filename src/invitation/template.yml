@@ -27,7 +27,7 @@ embassy:
 invitee:
   name:  # <first name> [<other names>]+ <last name>; write `Mary~Ann Smith` to keep a two-word first name together
     - Invitee Name
-  pronoun: null  # optional, they/them/their by default; otherwise e.g. she/her/her
+  pronoun: null  # optional, e.g. she/her/her for a single invitee; a group is always they/them/their
   relationship: friend
 
 trip:

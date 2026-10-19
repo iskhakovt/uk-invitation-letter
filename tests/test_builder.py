@@ -57,6 +57,7 @@ class TestLoadConfig:
         assert "  inviter.name: Field required" in message
         assert "  invitee.name.0: String should have at least 1 character" in message
         assert "  invitee.pronoun: Pronouns must be written as three non-empty parts" in message
+        assert "at least 1 item" not in message
         assert "  trip: departure_date (2026-01-01) must not be before arrival_date (2026-01-02)" in message
         assert "Value error" not in message
         assert "constrained-str" not in message

@@ -53,7 +53,7 @@ def tex_nobreak(s: str) -> Tex:
     """Escape a short phrase (a name, an address line) and keep its words on one line.
 
     Spaces become non-breaking. A `~` typed in the data file is kept as one too: that is
-    the documented way to hold a two-word first name together in `Name.short_name()`.
+    the documented way to hold a two-word first name together in `Invitee.short_name()`.
     Input that is already `Tex` is not escaped again but still gets its spaces made non-breaking.
     """
     if not isinstance(s, Tex):
