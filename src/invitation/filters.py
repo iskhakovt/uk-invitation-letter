@@ -15,6 +15,14 @@ import phonenumbers
 from .util import Tex, parse_phone, tex_nobreak, use_non_breaking_space
 
 
+def _strings(value: Sequence[str]) -> Sequence[str]:
+    # A `str` is itself a `Sequence[str]`, so `{{ inviter.name|names }}` would
+    # otherwise be joined letter by letter. Scalars take `|nobreak`.
+    if isinstance(value, str):
+        raise TypeError("expected a sequence of strings, got a single string; use the `nobreak` filter for one value")
+    return value
+
+
 def _and_join(items: Sequence[str]) -> str:
     if not items:
         return ""
@@ -27,22 +35,24 @@ def _and_join(items: Sequence[str]) -> str:
 
 def names(full_names: Sequence[str]) -> Tex:
     """Full names joined with `and`, e.g. `Joseph~Brodsky and Maria~Sozzani`."""
-    return Tex(_and_join([tex_nobreak(name) for name in full_names]))
+    return Tex(_and_join([tex_nobreak(name) for name in _strings(full_names)]))
 
 
 def first_names(full_names: Sequence[str]) -> Tex:
     """First names joined with `and`, e.g. `Joseph and Maria`."""
-    return Tex(_and_join([tex_nobreak(name.split()[0]) for name in full_names]))
+    # `split()` drops some control characters that pydantic's strip keeps, so a
+    # name that is only those would split to nothing; fall back to the name.
+    return Tex(_and_join([tex_nobreak((name.split() or [name])[0]) for name in _strings(full_names)]))
 
 
 def address_inline(lines: Sequence[str]) -> Tex:
     """Address lines on one line, separated by commas."""
-    return Tex(", ".join(tex_nobreak(line) for line in lines))
+    return Tex(", ".join(tex_nobreak(line) for line in _strings(lines)))
 
 
 def address_block(lines: Sequence[str]) -> Tex:
     """Address lines separated by LaTeX line breaks."""
-    return Tex("\\\\\n".join(tex_nobreak(line) for line in lines))
+    return Tex("\\\\\n".join(tex_nobreak(line) for line in _strings(lines)))
 
 
 # Hard-coded so month names don't depend on the host's LC_TIME (strftime("%B")

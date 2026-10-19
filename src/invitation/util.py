@@ -9,8 +9,8 @@ class Tex(str):
     """A string that is already valid LaTeX and must not be escaped again.
 
     Every `{{ ... }}` expression in a template is escaped automatically (see
-    builder.py) unless it is a `Tex`. The Jinja filters in filters.py are the
-    only producers of `Tex`; the model is plain data.
+    builder.py) unless it is a `Tex`. Only `tex_escape` and `tex_nobreak` here
+    and the Jinja filters in filters.py produce `Tex`; the model is plain data.
 
     Like any `str` subclass, string operations on it (`+`, `.upper()`, slicing,
     Jinja's built-in filters) return a plain `str`, which would then be escaped

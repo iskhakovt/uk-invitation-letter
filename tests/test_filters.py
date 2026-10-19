@@ -26,6 +26,10 @@ class TestNames:
     def test_first_name_ends_at_any_whitespace(self, space: str) -> None:
         assert first_names((f"Alice{space}Smith",)) == "Alice"
 
+    def test_name_that_split_discards_is_used_whole(self) -> None:
+        # U+001C is not Unicode White_Space (so pydantic keeps it) but str.split() drops it.
+        assert first_names(("\x1c",)) == "\x1c"
+
     def test_escaped(self) -> None:
         assert names(("Marks & Spencer", "Bob_Jones")) == "Marks~\\&~Spencer and Bob\\_Jones"
         assert first_names(("Marks & Spencer", "Bob_Jones")) == "Marks and Bob\\_Jones"
@@ -72,6 +76,13 @@ SAMPLE_CALLS: dict[str, tuple[object, ...]] = {
     "date": (datetime.date(2026, 1, 5),),
     "phone": ("07758888305",),
 }
+
+
+class TestSequenceFiltersRejectAString:
+    @pytest.mark.parametrize("name", ["names", "first_names", "address_inline", "address_block"])
+    def test_bare_string_raises(self, name: str) -> None:
+        with pytest.raises(TypeError, match="use the `nobreak` filter"):
+            FILTERS[name]("Alice Smith")
 
 
 class TestEveryFilter:
