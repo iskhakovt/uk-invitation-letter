@@ -1,14 +1,15 @@
 import pathlib
 import shutil
 import subprocess
+from typing import Final
 
 import pytest
 
-from invitation.builder import ENGINES, Engine, _required_tools, build
+from invitation.builder import ENGINES, Engine, build, required_tools
 from tests.data import REPO_ROOT
 
-FIXTURE_DIR: pathlib.Path = pathlib.Path(__file__).parent / "fixtures" / "render"
-ARTIFACT_DIR: pathlib.Path = REPO_ROOT / "tests" / "_artifacts" / "render"
+FIXTURE_DIR: Final[pathlib.Path] = pathlib.Path(__file__).parent / "fixtures" / "render"
+ARTIFACT_DIR: Final[pathlib.Path] = REPO_ROOT / "tests" / "_artifacts" / "render"
 
 
 def _baseline(engine: Engine) -> pathlib.Path:
@@ -25,7 +26,7 @@ def test_render_matches_baseline(
     monkeypatch: pytest.MonkeyPatch,
     engine: Engine,
 ) -> None:
-    missing = [tool for tool in _required_tools(engine) if shutil.which(tool) is None]
+    missing = [tool for tool in required_tools(engine) if shutil.which(tool) is None]
     if missing:
         if require_engines:
             pytest.fail(f"{', '.join(missing)} not installed")

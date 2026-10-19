@@ -20,11 +20,11 @@ def render(data: Mapping[str, object]) -> str:
 class TestReadmeExample:
     def test_renders_expected_sentences(self, readme_example_yaml: str) -> None:
         tex = render_tex(parse_yaml_raw_as(InvitationConfig, readme_example_yaml))
-        assert "my friends, Joseph~Brodsky and Maria~Sozzani, will apply for a UK visitor visa" in tex
+        assert "my friends, Joseph~Brodsky and María~Sozzani, will apply for a UK visitor visa" in tex
         assert "from 1~January~2026 until 31~January~2026 for a short trip." in tex
-        assert "I am able to accommodate Joseph and Maria at my place, 75~Hertingfordbury~Road, Newton~NG13~8QY." in tex
+        assert "I am able to accommodate Joseph and María at my place, 75~Hertingfordbury~Road, Newton~NG13~8QY." in tex
         assert "They will use their savings for the trip, and I will assist them" in tex
-        assert "Joseph and Maria will return to the US to circumnavigate the globe." in tex
+        assert "Joseph and María will return to the US to circumnavigate the globe." in tex
         assert "I am currently employed at Jstory~UK~Ltd, 89~Well~Lane, Patterdale~CA11~0LQ." in tex
         assert "\\item immigration status share code" in tex
         assert "\\item employment reference" in tex
@@ -199,7 +199,6 @@ class TestCompilePdf:
 
         def fake_run(command: list[object], **_: object) -> object:
             seen.append(command)
-            (tmp_path / "out.pdf").parent.mkdir(exist_ok=True)
             pathlib.Path(str(command[-1])).with_suffix(".pdf").write_bytes(b"%PDF")
             return type("Result", (), {"returncode": 0})()
 

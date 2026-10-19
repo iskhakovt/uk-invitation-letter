@@ -2,8 +2,8 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Mapping
-from typing import Final, Literal, get_args
+from collections.abc import Callable, Mapping
+from typing import Final, Literal, NamedTuple, get_args
 
 import jinja2
 from pydantic import ValidationError
@@ -16,9 +16,33 @@ from .util import fix_floating_punctuation, tex_escape
 
 Engine = Literal["xelatex", "lualatex", "pdflatex", "tectonic"]
 ENGINES: Final[tuple[Engine, ...]] = get_args(Engine)
+Command = list[str | pathlib.Path]
 
-# Engines driven through latexmk, and the latexmk flag that selects each.
-_LATEXMK_FLAG: Final[Mapping[Engine, str]] = {"xelatex": "-xelatex", "lualatex": "-lualatex", "pdflatex": "-pdf"}
+
+def _latexmk(flag: str) -> Callable[[pathlib.Path, pathlib.Path], Command]:
+    def command(tex_file: pathlib.Path, out_dir: pathlib.Path) -> Command:
+        return ["latexmk", flag, "-interaction=nonstopmode", "-halt-on-error", f"-output-directory={out_dir}", tex_file]
+
+    return command
+
+
+def _tectonic(tex_file: pathlib.Path, out_dir: pathlib.Path) -> Command:
+    # Tectonic is a self-contained XeTeX; it fetches packages itself and needs no latexmk.
+    return ["tectonic", "--outdir", out_dir, tex_file]
+
+
+class _Runner(NamedTuple):
+    tools: tuple[str, ...]  # binaries that must be on PATH
+    command: Callable[[pathlib.Path, pathlib.Path], Command]  # (tex file, output dir) -> argv
+
+
+_RUNNERS: Final[Mapping[Engine, _Runner]] = {
+    "xelatex": _Runner(("latexmk", "xelatex"), _latexmk("-xelatex")),
+    "lualatex": _Runner(("latexmk", "lualatex"), _latexmk("-lualatex")),
+    "pdflatex": _Runner(("latexmk", "pdflatex"), _latexmk("-pdf")),
+    "tectonic": _Runner(("tectonic",), _tectonic),
+}
+assert tuple(_RUNNERS) == ENGINES
 
 
 class BuildError(Exception):
@@ -78,31 +102,17 @@ def render_tex(config: InvitationConfig) -> str:
     return fix_floating_punctuation(output_text)
 
 
-def _command(engine: Engine, tex_file: pathlib.Path, out_dir: pathlib.Path) -> list[str | pathlib.Path]:
-    """The compiler invocation for `engine`, writing its outputs into `out_dir`."""
-    if engine == "tectonic":
-        # Tectonic is a self-contained XeTeX; it fetches packages itself and needs no latexmk.
-        return ["tectonic", "--outdir", out_dir, tex_file]
-    return [
-        "latexmk",
-        _LATEXMK_FLAG[engine],
-        "-interaction=nonstopmode",
-        "-halt-on-error",
-        f"-output-directory={out_dir}",
-        tex_file,
-    ]
-
-
-def _required_tools(engine: Engine) -> tuple[str, ...]:
-    return ("tectonic",) if engine == "tectonic" else ("latexmk", engine)
+def required_tools(engine: Engine) -> tuple[str, ...]:
+    """The binaries `engine` needs on PATH."""
+    return _RUNNERS[engine].tools
 
 
 def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xelatex") -> None:
     """Compile LaTeX source with `engine` and move the resulting PDF to `output_file`."""
-    tools = _required_tools(engine)
-    for tool in tools:
+    runner = _RUNNERS[engine]
+    for tool in runner.tools:
         if shutil.which(tool) is None:
-            raise BuildError(f"{tool} not found on PATH; install " + (" and ".join(tools) if len(tools) > 1 else tool))
+            raise BuildError(f"{tool} not found on PATH; install " + " and ".join(runner.tools))
 
     with tempfile.TemporaryDirectory() as temp_dir_name:
         temp_dir = pathlib.Path(temp_dir_name)
@@ -110,9 +120,9 @@ def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = "xe
         pdf_file = temp_dir / "invitation.pdf"
 
         tex_file.write_text(tex_source, encoding="utf-8")
-        result = subprocess.run(_command(engine, tex_file, temp_dir))
+        result = subprocess.run(runner.command(tex_file, temp_dir))
         if result.returncode != 0:
-            raise BuildError(f"{tools[0]} exited with status {result.returncode}; see the LaTeX output above")
+            raise BuildError(f"{runner.tools[0]} exited with status {result.returncode}; see the LaTeX output above")
 
         output_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(pdf_file, output_file)

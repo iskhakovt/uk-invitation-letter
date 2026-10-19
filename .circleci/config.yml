@@ -57,6 +57,9 @@ jobs:
             REPO=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
             [ -d /root/texmf ] || tlmgr --repository "$REPO" init-usertree
             tlmgr --repository "$REPO" --usermode --usertree /root/texmf install $(cat .circleci/texlive-packages.txt)
+            # The cache holds the user tree but not TEXMFVAR, where updmap writes the
+            # font maps pdfTeX needs for the Type 1 Garamond; regenerate them every run.
+            updmap-user
       - save_cache:
           key: texmf-v1-{{ checksum ".circleci/texlive-packages.txt" }}
           paths:
@@ -67,17 +70,19 @@ jobs:
             apt-get update -qq
             apt-get install -y -qq --no-install-recommends diff-pdf-wx ca-certificates curl
       - run:
+          # Pinned: the render test compares against a baseline PDF produced by this exact version.
           name: Install Tectonic
           command: |
-            cd /usr/local/bin
-            curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+            VERSION=$(cat .circleci/tectonic-version.txt)
+            curl --proto '=https' --tlsv1.2 -fsSL \
+              "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40${VERSION}/tectonic-${VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+              | tar -xz -C /usr/local/bin tectonic
             tectonic --version
       # Tectonic fetches the packages the preamble needs on first use; cache them
-      # keyed on the preamble so a template change refreshes the bundle files.
+      # keyed on its version and the preamble, so either changing refreshes the files.
       - restore_cache:
           keys:
-            - tectonic-v1-{{ checksum "src/invitation/templates/letter.tex.jinja" }}
-            - tectonic-v1-
+            - tectonic-{{ checksum ".circleci/tectonic-version.txt" }}-{{ checksum "src/invitation/templates/letter.tex.jinja" }}
       - run:
           name: Install uv
           command: |
@@ -94,9 +99,10 @@ jobs:
             - /root/.cache/uv
       - run: uv run pytest -m render --require-engines
       - save_cache:
-          key: tectonic-v1-{{ checksum "src/invitation/templates/letter.tex.jinja" }}
+          key: tectonic-{{ checksum ".circleci/tectonic-version.txt" }}-{{ checksum "src/invitation/templates/letter.tex.jinja" }}
           paths:
             - /root/.cache/Tectonic
+          when: always
       - store_artifacts:
           path: tests/_artifacts
 

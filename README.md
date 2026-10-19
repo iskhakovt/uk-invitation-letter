@@ -52,7 +52,7 @@ embassy:
 invitee:
   name:  # <first name> [<other names>]+ <last name>
     - Joseph Brodsky
-    - Maria Sozzani
+    - María Sozzani
   pronoun: they/them/their  # optional, e.g. she/her/her for a single invitee; a group is always they/them/their
   relationship: friends
 
@@ -74,7 +74,7 @@ docs:  # optional extra documents
 pipx run uk-invitation-letter render --data data.yml --output invitation.pdf
 ```
 
-The output will be saved to `invitation.pdf`. The default engine is XeLaTeX; pass `--engine tectonic`, `--engine lualatex` or `--engine pdflatex` to use another. pdfLaTeX uses Type 1 fonts, so it covers Latin, Greek and Cyrillic text but not other scripts.
+The output will be saved to `invitation.pdf`. The default engine is XeLaTeX; pass `--engine tectonic`, `--engine lualatex` or `--engine pdflatex` to use another. pdfLaTeX uses Type 1 fonts with the T1 encoding, so it handles Latin-script text (including accents) but not other scripts; use one of the other engines for those.
 
 Text from the data file is escaped for LaTeX automatically, so `&`, `%`, `#`, `_`, `~` and friends render literally. Names and address lines are never broken across lines. In those fields only, a `~` you type is kept as a non-breaking space: write `Mary~Ann Smith` so the short form of the name stays "Mary~Ann" rather than "Mary".
 
