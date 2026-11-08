@@ -38,7 +38,9 @@ def test_render_matches_baseline(
     monkeypatch.setenv("FORCE_SOURCE_DATE", "1")
 
     actual = tmp_path / "actual.pdf"
-    build(example_data_file, actual, engine)
+    warnings: list[str] = []
+    build(example_data_file, actual, engine, warn=warnings.append)
+    assert warnings == [], "the README example should be a clean data file"
 
     baseline = _baseline(engine)
     if record_baselines:

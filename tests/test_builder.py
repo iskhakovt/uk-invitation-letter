@@ -20,15 +20,27 @@ def render(data: Mapping[str, object]) -> str:
 class TestReadmeExample:
     def test_renders_expected_sentences(self, readme_example_yaml: str) -> None:
         tex = render_tex(parse_yaml_raw_as(InvitationConfig, readme_example_yaml))
-        assert "my friends, Joseph~Brodsky and María~Sozzani, will apply for a UK visitor visa" in tex
-        assert "from 1~January~2026 until 31~January~2026 for a short trip." in tex
-        assert "I am able to accommodate Joseph and María at my place, 75~Hertingfordbury~Road, Newton~NG13~8QY." in tex
-        assert "They will use their savings for the trip, and I will assist them" in tex
+        assert "my friends, Joseph~Brodsky and María~Sozzani, will each apply for a UK Standard Visitor visa" in tex
+        assert "from 1~January~2026 until 31~January~2026 for my wedding on 10 January 2026." in tex
+        assert (
+            "Joseph and María will stay with me at my home, 75~Hertingfordbury~Road, Newton~NG13~8QY, free of charge."
+            in tex
+        )
+        assert "They will pay for their own travel and living costs." in tex
+        assert (
+            "While in the UK, they will not do paid or unpaid work for a UK company or as a self-employed person, "
+            "or access public funds." in tex
+        )
         assert "Joseph and María will return to the US to circumnavigate the globe." in tex
-        assert "I am currently employed at Jstory~UK~Ltd, 89~Well~Lane, Patterdale~CA11~0LQ." in tex
-        assert "\\item immigration status share code" in tex
+        # The host's two sentences share a paragraph, separated from the list of documents.
+        assert (
+            "I am settled in the UK with indefinite leave to remain.\n"
+            "I am currently employed at Jstory~UK~Ltd, 89~Well~Lane, Patterdale~CA11~0LQ.\n\n"
+            "I have enclosed the following documents:"
+        ) in tex
+        assert "\\item eVisa share code" in tex
         assert "\\item employment reference" in tex
-        assert "\\item proof of address: council tax bill" in tex
+        assert "\\item proof of address: tenancy agreement" in tex
         assert "\\item table tennis match result sheet" in tex
         assert "07758~888305" in tex
 
@@ -116,7 +128,7 @@ class TestEscaping:
     def test_tilde_in_name_is_a_non_breaking_space(self) -> None:
         tex = render({**MINIMAL_DATA, "invitee": {"name": "Mary~Ann Smith", "relationship": "sister"}})
         assert "my sister, Mary~Ann~Smith," in tex
-        assert "accommodate Mary~Ann at my place" in tex
+        assert "Mary~Ann will stay with me" in tex
 
     def test_tilde_in_prose_renders_literally(self) -> None:
         tex = render({**MINIMAL_DATA, "trip": {**TRIP, "reason": "a visit of ~2 weeks"}})
@@ -129,25 +141,55 @@ class TestEscaping:
 class TestBranches:
     def test_no_employer_no_optionals(self) -> None:
         tex = render(MINIMAL_DATA)
+        assert "my friend, Bob~Jones, will apply for" in tex
         assert "employed at" not in tex
         assert "employment reference" not in tex
         assert "After their trip" not in tex
         assert "proof of address" not in tex
+        assert "I am " not in tex
         assert "until 10~January~2026.\n" in tex
+
+    def test_nothing_to_enclose_drops_the_list(self) -> None:
+        # LaTeX rejects an empty itemize, and the sentence introducing it would dangle.
+        tex = render(MINIMAL_DATA)
+        assert "I have enclosed" not in tex
+        assert "itemize" not in tex
+
+    def test_status(self) -> None:
+        tex = render({**MINIMAL_DATA, "inviter": {**INVITER, "status": "a British citizen"}})
+        assert "I am a British citizen.\n" in tex
+
+    def test_visitor_pays(self) -> None:
+        tex = render(MINIMAL_DATA)
+        assert "They will pay for their own travel and living costs." in tex
+        assert "I will pay" not in tex
 
     def test_financial_support(self) -> None:
         tex = render({**MINIMAL_DATA, "trip": {**TRIP, "financial_support": True}})
-        assert (
-            "will be in receipt of a return ticket and all of the expenses for their journey will be met by me." in tex
+        assert "I will pay for their return journey and all of their costs during the visit." in tex
+        assert "\\item recent bank statements" in tex
+        assert "payslips" not in tex
+        assert "own travel" not in tex
+
+    def test_financial_support_while_employed(self) -> None:
+        tex = render(
+            {
+                **MINIMAL_DATA,
+                "employer": {"name": "Acme Ltd", "address": ["1 Office Road"]},
+                "trip": {**TRIP, "financial_support": True},
+            }
         )
-        assert "\\item latest payslip" in tex
-        assert "savings" not in tex
+        assert "\\item recent bank statements" in tex
+        assert "\\item recent payslips" in tex
+        assert "\\item employment reference" in tex
 
     @pytest.mark.parametrize(
         ("residence", "item"),
         [
             ("permit", "residence permit"),
-            ("share code", "immigration status share code"),
+            ("share code", "eVisa share code"),
+            ("Share Code", "eVisa share code"),
+            ("Passport", "passport"),
             ("passport", "passport"),
             ("settled status letter", "settled status letter"),
         ],
@@ -168,8 +210,8 @@ class TestBranches:
             {**MINIMAL_DATA, "invitee": {"name": "Carol Lee", "relationship": "mother", "pronoun": "she/her/her"}}
         )
         assert "She will travel to the United~Kingdom" in tex
-        assert "She will use her savings for the trip, and I will assist her" in tex
-        assert "While in the UK, she will not engage" in tex
+        assert "She will pay for her own travel and living costs." in tex
+        assert "While in the UK, she will not do paid or unpaid work" in tex
 
 
 class TestCompilePdf:

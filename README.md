@@ -2,6 +2,8 @@
 
 Writes a [UK Standard Visitor](https://www.gov.uk/standard-visitor) visa invitation letter for you.
 
+[docs/rationale.md](docs/rationale.md) explains each sentence and enclosure against the Home Office guidance, and lists the cases the letter doesn't cover (student hosts, children, visitors who need an ETA).
+
 
 ---
 
@@ -32,8 +34,9 @@ inviter:
     - Newton NG13 8QY
   phone: "07758888305"
   email: noreply@temporary-mail.net
-  residence: share code  # optional: `permit` / `share code` / `passport` / custom
-  proof_of_address: council tax bill  # optional
+  status: settled in the UK with indefinite leave to remain  # optional, completes "I am ..."
+  residence: share code  # optional: `share code` (eVisa) / `passport` (British or Irish citizens) / custom
+  proof_of_address: tenancy agreement  # optional
 
 employer:
   name: Jstory UK Ltd
@@ -59,7 +62,7 @@ invitee:
 trip:
   arrival_date: 2026-01-01
   departure_date: 2026-01-31
-  reason: a short trip  # optional
+  reason: my wedding on 10 January 2026  # optional, only for an event in your life
   return_reason: to circumnavigate the globe  # optional
   return_country: the US  # optional
   financial_support: false

@@ -1,0 +1,47 @@
+# Why the letter says what it says
+
+Checked on 8 November 2026 against the Immigration Rules (Appendix V: Visitor), the Home Office's Visit caseworker guidance (v18.0, 8 October 2026), the GOV.UK guide to supporting documents (8 October 2026), university advice for student hosts, and immigrationboards.com threads. Links are at the end. This is not legal advice: check GOV.UK before you apply.
+
+An invitation letter is optional. GOV.UK publishes no template and doesn't ask for one for family or friend visits. What the letter does is back up the visitor's application form ("supporting documents should back up evidence statements made on the visa application form", caseworker guidance 6.1). So everything in it must match the form: dates, who pays and where the visitor stays.
+
+## The letter, sentence by sentence
+
+- **"will apply for a UK Standard Visitor visa"**: the route's name. Visitors from countries that need an ETA instead (most of Europe, the USA, Canada, Australia and others) usually don't apply for a visa, and the letter isn't worded for them.
+- **Dates**: a Standard Visitor can stay up to 6 months (V 17.2), so the tool warns about longer trips. The rules don't say whether 6 months from 1 January ends on 30 June or 1 July, so it also warns about leaving on the anniversary. Forum regulars advise asking for a short, specific stay, because a long one raises doubts about leaving.
+- **`reason`**: the visitor already gives the purpose on the form. Set `reason` only when the visit is for an event in your life, such as your graduation, wedding or a new baby, because then you can enclose proof the visitor can't. Marrying, or giving notice of marriage, in the UK needs a Marriage Visitor visa. Attending someone else's wedding is fine.
+- **"will stay with me at my home, …, free of charge"**: free accommodation is support from a third party. V 4.3 allows it only if you have a genuine relationship with the visitor, you are not in breach of immigration law, and you can and will provide it for the whole stay.
+- **Who pays** (`financial_support`): either you pay for everything or the visitor pays for themselves. If you pay, you must show enough money for yourself, your dependants and the visitor (caseworker guidance 8.2). The old line "I will assist them to cover any additional expenses" was removed. It promised support without showing those funds, and the visitor's form may not have declared it, while officers expect the letter and the form to agree (6.1).
+- **"will not do paid or unpaid work for a UK company or as a self-employed person, or access public funds"**: GOV.UK's own wording for the work ban (V 4.4(a), and the "no work" and "no access to public funds" conditions in V 17.1). A plain "will not work" would be stricter than the rules, which allow answering email for an employer abroad and up to 30 days of volunteering for a registered charity. Temporary, informal care for family, such as grandparents helping with a newborn, is allowed (caseworker guidance 9.5, clarified in October 2026), as long as it doesn't amount to working as a childminder or carer and the visitor isn't in effect living in the UK. Describe the purpose accurately on the form; older forum refusals for childcare predate this clarification.
+- **Return** (`return_country`, `return_reason`): V 4.2(a). The visitor's own evidence of ties at home counts for more than anything you write.
+- **`status`, "I am …"**: under V 4.3(b) a host who is not British must be lawfully in the UK, and the supporting-documents guide asks you to show it. Check that your permission lasts beyond the visitor's departure date.
+- **No guarantees.** Officers must not ask for or accept a written guarantee about how long the visitor will stay (caseworker guidance 6.1). Undertakings from third parties "cannot be considered as a guarantee", aren't evidence of support, and at most count towards credibility (8.3). Old forum templates include them, and this letter leaves them out on purpose.
+
+## Enclosed documents
+
+- **Your status** (`residence`): `passport` if you are a British or Irish citizen, otherwise `share code` for your eVisa. A share code lasts 90 days, and whoever checks it needs your date of birth. GOV.UK doesn't say how visa officers use share codes, so add a copy of your passport through `docs` as well. All biometric residence permits have expired, so `permit` still prints "residence permit" but warns you to use `share code`.
+- **If you only provide accommodation**: section 3 of the supporting-documents guide still treats you as a sponsor, who should show legal status in the UK and enough money for yourself and your dependants. Forum regulars report that status, address and this letter usually do. Recent bank statements can go in `docs` if your means are in doubt.
+- **Proof of address** (`proof_of_address`): a tenancy agreement, mortgage statement or title deeds. The supporting-documents guide lists a sponsor's council tax and utility bills under "Documents you should not use as evidence", and caseworker guidance 6.1 tells officers not to consider documents on that list. If you rent, a letter from your landlord agreeing to the guest helps.
+- **If you pay**: the letter lists recent bank statements, plus recent payslips if you are employed. Six months of both is common advice from universities and the forum, not a rule. Statements issued more than a year before the application are on the same list, so they aren't considered. Explain any large recent deposits. The amount the visitor declares on the form as coming from you must be covered by the balance shown: one forum refusal followed a £3,500 promise against a £2,842 balance.
+- **Employment reference**: listed whenever `employer` is set.
+
+## Cases the letter doesn't cover
+
+Add the missing text or documents yourself through `status`, `reason`, `return_reason` and `docs`.
+
+- **You are a student.** Write your course and visa in `status`, for example "a student at the University of Leeds, on a Student visa valid until 30 September 2027". Add your university's enrolment letter to `docs`; some universities want it dated within a month of the application. Check whether your halls or landlord allow guests. Paying for a visitor out of student funds is weak evidence, so the visitor should usually pay.
+- **You are self-employed or retired and paying.** Payslips don't apply. Use `docs` for tax returns or pension statements, and show personal rather than company accounts.
+- **The visitor is a student.** They should provide their own letter from their school or university confirming enrolment and leave of absence (supporting-documents guide, section 2). `return_reason: to continue their studies` fits.
+- **The visitor is under 18.** The rules require adequate arrangements for travel, reception and care, and the parents' written consent if the child travels without them (V 5.1, V 5.2). GOV.UK also asks for the host's name, date of birth and relationship to the child. A child under 16 (under 18 if disabled) who stays more than 28 days with someone who isn't a close relative is in private foster care, and the local council must be told. Scotland and Northern Ireland have different rules. The letter has no wording for any of this.
+- **The visitor needs an ETA, not a visa**: see the first point above.
+- **Part funding, or a set amount**: the letter is all or nothing. State the amounts on the form.
+- **Staying elsewhere, or paying you for the stay**, such as a hotel, a stay split between two hosts, or rent paid to you: the letter always says the visitor stays with you free of charge.
+- **Visiting a partner**: refusals often cite a lack of relationship evidence, such as how and when you met and time spent together. Personal photographs are on the same "should not use" list.
+
+## Sources
+
+- [Immigration Rules Appendix V: Visitor](https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-v-visitor)
+- [Visit caseworker guidance](https://www.gov.uk/government/publications/visit-guidance/visit-caseworker-guidance-accessible--2)
+- [Visiting the UK: guide to supporting documents](https://www.gov.uk/government/publications/visitor-visa-guide-to-supporting-documents/guide-to-supporting-documents-visiting-the-uk)
+- GOV.UK: [Standard Visitor](https://www.gov.uk/standard-visitor), [visitors under 18](https://www.gov.uk/standard-visitor/if-youre-under-18), [Marriage Visitor](https://www.gov.uk/marriage-visa), [ETA](https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta), [biometric residence permits](https://www.gov.uk/biometric-residence-permits), [view and prove your status](https://www.gov.uk/view-prove-immigration-status)
+- Student hosts: [University of Reading](https://www.reading.ac.uk/essentials/international/visa-and-immigration/visit-visa), [De Montfort SU](https://www.demontfortsu.com/support/advice/welfarehub/immigration/invitations/), [University of Hertfordshire](https://ask.herts.ac.uk/family-or-friends-visiting-the-uk)
+- immigrationboards.com: [host documents](https://www.immigrationboards.com/visitor-visa-for-parents-law-t345715.html), [sponsor funds refusal](https://www.immigrationboards.com/visitor-visa-refusal-for-dad-and-sister-t347969.html), [unexplained deposits refusal](https://immigrationboards.com/viewtopic.php?t=339448), [childcare refusal](https://www.immigrationboards.com/viewtopic.php?f=3&t=312974&start=0), [partner visit](https://www.immigrationboards.com/general-uk-immigration-forum/inviting-girlfriend-to-visit-t262338.html)

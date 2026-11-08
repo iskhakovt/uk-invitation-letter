@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from invitation.builder import Engine
+from invitation.builder import BuildError, Engine
 from invitation.main import ENGINE_ENV, main
 from invitation.template import load_template_yaml
 
@@ -52,6 +52,45 @@ def test_render_without_latexmk(
     monkeypatch.setattr("invitation.builder.shutil.which", lambda _: None)
     assert main(["render", "--data", str(example_data_file), "--output", str(tmp_path / "out.pdf")]) == 1
     assert "latexmk not found" in capsys.readouterr().err
+
+
+def _write_data_with_two_warnings(tmp_path: pathlib.Path) -> pathlib.Path:
+    data = tmp_path / "data.yml"
+    data.write_text(
+        "inviter: {name: A, address: [x], phone: '07700900000', email: a@example.com, residence: Permit}\n"
+        "invitee: {name: B, relationship: friend}\nembassy: {name: E, address: [x]}\n"
+        "trip: {arrival_date: 2026-01-01, departure_date: 2026-07-01}\n",
+        encoding="utf-8",
+    )
+    return data
+
+
+def test_render_prints_warnings_and_succeeds(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    compiled: list[pathlib.Path] = []
+    monkeypatch.setattr("invitation.builder.compile_pdf", lambda _tex, output, _engine: compiled.append(output))
+    data = _write_data_with_two_warnings(tmp_path)
+    assert main(["render", "--data", str(data), "--output", str(tmp_path / "out.pdf")]) == 0
+    assert compiled == [tmp_path / "out.pdf"]
+    err = capsys.readouterr().err.splitlines()
+    assert len(err) == 2
+    assert err[0].startswith("warning: inviter.residence: `permit`")
+    assert err[1].startswith("warning: trip.departure_date: a Standard Visitor can usually stay up to 6 months")
+
+
+def test_render_prints_warnings_before_the_error_when_the_build_fails(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def failing_compile(*_: object) -> None:
+        raise BuildError("latexmk exited with status 12")
+
+    monkeypatch.setattr("invitation.builder.compile_pdf", failing_compile)
+    data = _write_data_with_two_warnings(tmp_path)
+    assert main(["render", "--data", str(data), "--output", str(tmp_path / "out.pdf")]) == 1
+    err = capsys.readouterr().err.splitlines()
+    assert [line.split(":")[0] for line in err] == ["warning", "warning", "error"]
+    assert err[2] == "error: latexmk exited with status 12"
 
 
 def test_unknown_command_exits_via_argparse() -> None:

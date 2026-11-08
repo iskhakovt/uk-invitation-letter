@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 import subprocess
+import sys
 import tempfile
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -137,5 +138,26 @@ def compile_pdf(tex_source: str, output_file: pathlib.Path, engine: Engine = Eng
         shutil.move(pdf_file, output_file)
 
 
-def build(config_file: pathlib.Path, output_file: pathlib.Path, engine: Engine = Engine.XELATEX) -> None:
-    compile_pdf(render_tex(load_config(config_file)), output_file, engine)
+def _print_warning(warning: str) -> None:
+    print(f"warning: {warning}", file=sys.stderr)
+
+
+def build(
+    config_file: pathlib.Path,
+    output_file: pathlib.Path,
+    engine: Engine = Engine.XELATEX,
+    *,
+    warn: Callable[[str], None] = _print_warning,
+) -> None:
+    """Write the letter to `output_file`, then pass each of `InvitationConfig.warnings` to `warn` (default: stderr).
+
+    The warnings come after the TeX engine's output so they don't scroll away, and are passed on even if the
+    build fails.
+    """
+    config = load_config(config_file)
+    warnings = config.warnings()
+    try:
+        compile_pdf(render_tex(config), output_file, engine)
+    finally:
+        for warning in warnings:
+            warn(warning)

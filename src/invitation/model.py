@@ -1,5 +1,6 @@
 """What a letter is made of. Pure data: nothing here knows about LaTeX (see filters.py for that)."""
 
+import calendar
 import datetime
 from collections.abc import Mapping
 from typing import Annotated, Final, Self
@@ -25,7 +26,7 @@ _PRONOUN_HINT = "Pronouns must be written as three non-empty parts separated by 
 
 
 class Pronoun(BaseModel, frozen=True, extra="forbid"):
-    """The three forms a letter needs: `she` will travel, I will assist `her`, `her` savings.
+    """The three forms of a pronoun: `she` will travel, I will pay for `her` journey, and the object form `her`.
 
     Written in the data file as `she/her/her`; `null` or omitted means they/them/their.
     """
@@ -52,11 +53,16 @@ class Pronoun(BaseModel, frozen=True, extra="forbid"):
 THEY: Final[Pronoun] = Pronoun(subject="they", object="them", determiner="their")
 
 
+# `residence` values the letter replaces with a fixed description; anything else is printed as written.
+RESIDENCE_KEYWORDS: Final[frozenset[str]] = frozenset({"permit", "share code", "passport"})
+
+
 class Inviter(BaseModel):
     name: NonBlankStr
     address: Address
     phone: NonBlankStr
     email: NonBlankStr
+    status: NonBlankStr | None = None  # completes "I am ...", e.g. `a British citizen`
     residence: NonBlankStr | None = None
     proof_of_address: NonBlankStr | None = None
 
@@ -65,6 +71,25 @@ class Inviter(BaseModel):
     def check_phone(cls, phone: str) -> str:
         parse_phone(phone)
         return phone
+
+    @field_validator("status")
+    @classmethod
+    def drop_full_stop(cls, status: str | None) -> str | None:
+        # The letter ends "I am ..." with its own full stop.
+        if status is None:
+            return None
+        status = status.removesuffix(".").rstrip()
+        if not status:
+            raise ValueError("status must say more than a full stop")
+        return status
+
+    @field_validator("residence")
+    @classmethod
+    def normalise_residence_keyword(cls, residence: str | None) -> str | None:
+        # Keywords match in any case; the template and `warnings` then compare against the lower-case form.
+        if residence is not None and residence.casefold() in RESIDENCE_KEYWORDS:
+            return residence.casefold()
+        return residence
 
 
 class Invitee(BaseModel):
@@ -99,6 +124,23 @@ class Embassy(BaseModel):
     address: Address
 
 
+# Appendix V: Visitor, V 17.2: a Standard Visitor is granted permission for up to 6 months. The rules don't
+# say whether 6 months from 1 January ends on 30 June or 1 July, so leaving on the anniversary is warned about.
+MAX_STAY_MONTHS: Final[int] = 6
+
+
+def _add_months(day: datetime.date, months: int) -> datetime.date | None:
+    """The same day `months` later, clamped to the end of a shorter month (31 Aug + 6 → 28/29 Feb).
+
+    None when that is past the last date `datetime.date` can hold.
+    """
+    index = day.month - 1 + months
+    year, month = day.year + index // 12, index % 12 + 1
+    if year > datetime.MAXYEAR:
+        return None
+    return day.replace(year=year, month=month, day=min(day.day, calendar.monthrange(year, month)[1]))
+
+
 class Trip(BaseModel):
     arrival_date: datetime.date
     departure_date: datetime.date
@@ -123,3 +165,22 @@ class InvitationConfig(BaseModel):
     embassy: Embassy
     trip: Trip
     docs: tuple[NonBlankStr, ...] = ()
+
+    def warnings(self) -> tuple[str, ...]:
+        """Problems that would weaken the application but don't stop the letter being written.
+
+        These are warnings rather than validation errors so that data files that worked before still do.
+        """
+        found = []
+        if self.inviter.residence == "permit":
+            found.append(
+                "inviter.residence: `permit` lists a biometric residence permit, but BRPs have expired and been "
+                "replaced by eVisas; use `share code`"
+            )
+        anniversary = _add_months(self.trip.arrival_date, MAX_STAY_MONTHS)
+        if anniversary is not None and self.trip.departure_date >= anniversary:
+            found.append(
+                f"trip.departure_date: a Standard Visitor can usually stay up to {MAX_STAY_MONTHS} months; "
+                f"leave before {anniversary}"
+            )
+        return tuple(found)
