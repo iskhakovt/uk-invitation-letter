@@ -23,39 +23,46 @@
 {% block body %}
 \opening{Dear Visa Officer,}
 
-I would like to confirm that my {{ invitee.relationship }}, {{ invitee.name|names }}, will apply for a UK visitor visa. {{ invitee.pronoun.subject.capitalize() }} will travel to the United~Kingdom from {{ trip.arrival_date|date }} until {{ trip.departure_date|date }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
+I would like to confirm that my {{ invitee.relationship }}, {{ invitee.name|names }}, will{% if invitee.name|length > 1 %} each{% endif %} apply for a UK Standard Visitor visa. {{ invitee.pronoun.subject.capitalize() }} will travel to the United~Kingdom from {{ trip.arrival_date|date }} until {{ trip.departure_date|date }}{% if trip.reason %} for {{ trip.reason }}{% endif %}.
 
-I am able to accommodate {{ invitee.name|first_names }} at my place, {{ inviter.address|address_inline }}.
+{{ invitee.name|first_names }} will stay with me at my home, {{ inviter.address|address_inline }}, free of charge.
 {% if trip.financial_support %}
-{{ invitee.pronoun.subject.capitalize() }} will be in receipt of a return ticket and all of the expenses for {{ invitee.pronoun.determiner }} journey will be met by me.
+I will pay for {{ invitee.pronoun.determiner }} return journey and all of {{ invitee.pronoun.determiner }} costs during the visit.
 {% else %}
-{{ invitee.pronoun.subject.capitalize() }} will use {{ invitee.pronoun.determiner }} savings for the trip, and I will assist {{ invitee.pronoun.object }} to cover any additional expenses.
+{{ invitee.pronoun.subject.capitalize() }} will pay for {{ invitee.pronoun.determiner }} own travel and living costs.
 {% endif %}
 
-While in the UK, {{ invitee.pronoun.subject }} will not engage in gainful employment.
+While in the UK, {{ invitee.pronoun.subject }} will not do paid or unpaid work for a UK company or as a self-employed person, or access public funds.
 
 {% if trip.return_country or trip.return_reason %}
 After {{ invitee.pronoun.determiner }} trip to the UK, {{ invitee.name|first_names }} will {% if trip.return_country %}return to {{ trip.return_country }}{% else %}leave the UK{% endif %}{% if trip.return_reason %} {{ trip.return_reason }}{% endif %}.
 {% endif %}
 
+{% if inviter.status %}
+I am {{ inviter.status }}.
+{% endif %}
 {% if employer %}
 I am currently employed at {{ employer.name|nobreak }}, {{ employer.address|address_inline }}.
 {% endif %}
 
+{% if inviter.residence or employer or trip.financial_support or inviter.proof_of_address or docs %}
 I have enclosed the following documents:
 \begin{itemize}
 {% if inviter.residence == "permit" %} \item residence permit
-{% elif inviter.residence == "share code" %} \item immigration status share code
+{% elif inviter.residence == "share code" %} \item eVisa share code
 {% elif inviter.residence == "passport" %} \item passport
 {% elif inviter.residence %} \item {{ inviter.residence }}
 {% endif %}
 {% if employer %} \item employment reference {% endif %}
-{% if trip.financial_support %} \item latest payslip {% endif %}
+{% if trip.financial_support %} \item recent bank statements
+{% if employer %} \item recent payslips {% endif %}
+{% endif %}
 {% if inviter.proof_of_address %} \item proof of address: {{ inviter.proof_of_address }} {% endif %}
 {% for doc in docs %}
 \item {{ doc }}
 {% endfor %}
 \end{itemize}
+{% endif %}
 
 Should you wish to discuss this application further, please do not hesitate to contact me.
 

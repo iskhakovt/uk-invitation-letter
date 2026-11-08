@@ -131,6 +131,66 @@ class TestValidation:
     def test_same_day_trip_allowed(self) -> None:
         Trip(arrival_date=datetime.date(2026, 1, 1), departure_date=datetime.date(2026, 1, 1))
 
+    @pytest.mark.parametrize(
+        ("arrival", "departure"),
+        [
+            (datetime.date(2026, 1, 1), datetime.date(2026, 6, 30)),
+            (datetime.date(2026, 8, 31), datetime.date(2027, 2, 27)),  # no 31 February: clamp to month end
+            (datetime.date(2027, 8, 31), datetime.date(2028, 2, 28)),  # leap year
+        ],
+    )
+    def test_stay_under_six_months_has_no_warning(self, arrival: datetime.date, departure: datetime.date) -> None:
+        trip = {"arrival_date": arrival, "departure_date": departure}
+        assert InvitationConfig.model_validate({**MINIMAL_DATA, "trip": trip}).warnings() == ()
+
+    @pytest.mark.parametrize(
+        ("arrival", "departure"),
+        [
+            (datetime.date(2026, 1, 1), datetime.date(2026, 7, 1)),  # the anniversary itself
+            (datetime.date(2026, 8, 31), datetime.date(2027, 2, 28)),
+            (datetime.date(2027, 8, 31), datetime.date(2028, 2, 29)),
+            (datetime.date(2026, 1, 1), datetime.date(2026, 12, 31)),
+        ],
+    )
+    def test_stay_of_six_months_or_more_warns(self, arrival: datetime.date, departure: datetime.date) -> None:
+        trip = {"arrival_date": arrival, "departure_date": departure}
+        (warning,) = InvitationConfig.model_validate({**MINIMAL_DATA, "trip": trip}).warnings()
+        assert warning.startswith("trip.departure_date: a Standard Visitor can usually stay up to 6 months")
+
+    @pytest.mark.parametrize("residence", ["permit", "Permit", " permit "])
+    def test_expired_brp_keyword_warns(self, residence: str) -> None:
+        config = InvitationConfig.model_validate({**MINIMAL_DATA, "inviter": {**INVITER, "residence": residence}})
+        (warning,) = config.warnings()
+        assert warning.startswith("inviter.residence: `permit`")
+        assert warning.endswith("replaced by eVisas; use `share code`")
+
+    def test_minimal_config_has_no_warnings(self) -> None:
+        assert InvitationConfig.model_validate(MINIMAL_DATA).warnings() == ()
+
+    def test_no_warning_or_crash_when_six_months_on_is_past_the_last_date(self) -> None:
+        trip = {"arrival_date": "9999-07-01", "departure_date": "9999-12-31"}
+        assert InvitationConfig.model_validate({**MINIMAL_DATA, "trip": trip}).warnings() == ()
+
+    @pytest.mark.parametrize(("given", "stored"), [("Share Code", "share code"), ("PASSPORT", "passport")])
+    def test_residence_keyword_is_lower_cased(self, given: str, stored: str) -> None:
+        config = InvitationConfig.model_validate({**MINIMAL_DATA, "inviter": {**INVITER, "residence": given}})
+        assert config.inviter.residence == stored
+
+    def test_custom_residence_is_kept_as_written(self) -> None:
+        config = InvitationConfig.model_validate({**MINIMAL_DATA, "inviter": {**INVITER, "residence": "EUSS letter"}})
+        assert config.inviter.residence == "EUSS letter"
+
+    @pytest.mark.parametrize(
+        ("given", "stored"), [("a British citizen.", "a British citizen"), ("a citizen", "a citizen")]
+    )
+    def test_status_loses_one_trailing_full_stop(self, given: str, stored: str) -> None:
+        config = InvitationConfig.model_validate({**MINIMAL_DATA, "inviter": {**INVITER, "status": given}})
+        assert config.inviter.status == stored
+
+    def test_status_of_only_a_full_stop_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="more than a full stop"):
+            InvitationConfig.model_validate({**MINIMAL_DATA, "inviter": {**INVITER, "status": "."}})
+
     def test_invalid_phone_rejected(self) -> None:
         with pytest.raises(ValidationError, match="not a possible phone number"):
             InvitationConfig.model_validate({**MINIMAL_DATA, "inviter": {**INVITER, "phone": "0775"}})

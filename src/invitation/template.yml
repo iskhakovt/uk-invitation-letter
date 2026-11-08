@@ -8,8 +8,9 @@ inviter:
     - Example City EC1A 1AA
   phone: "07700900000"
   email: you@example.com
-  residence: share code  # optional: `permit` / `share code` / `passport` / custom
-  proof_of_address: council tax bill  # optional
+  status: null  # optional, completes "I am ...": e.g. `a British citizen` or `in the UK on a Skilled Worker visa valid until 1 May 2028`
+  residence: share code  # optional: `share code` (eVisa) / `passport` (British or Irish citizens) / custom
+  proof_of_address: tenancy agreement  # optional: tenancy agreement, mortgage statement or title deeds; GOV.UK says not to use council tax or utility bills
 
 employer:  # optional — delete this block if not applicable
   name: Example Employer Ltd
@@ -33,9 +34,9 @@ invitee:
 trip:
   arrival_date: 2026-01-01
   departure_date: 2026-01-15
-  reason: a short trip  # optional
+  reason: null  # optional, only when the visit is for an event in your life, e.g. `my graduation ceremony on 15 January 2026`
   return_reason: null  # optional
   return_country: null  # optional
-  financial_support: false
+  financial_support: false  # true if you pay for the trip; the letter then lists your recent bank statements
 
-docs: []  # optional: list of extra documents to enclose
+docs: []  # optional: extra documents, e.g. `letter from my university confirming my enrolment` or `birth certificate`
