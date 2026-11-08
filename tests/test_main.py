@@ -3,7 +3,7 @@ import pathlib
 import pytest
 
 from invitation.builder import BuildError, Engine
-from invitation.main import ENGINE_ENV, main
+from invitation.main import ENGINE_ENV, main, run
 from invitation.starter import load_starter_yaml
 
 
@@ -91,6 +91,16 @@ def test_render_prints_warnings_before_the_error_when_the_build_fails(
     err = capsys.readouterr().err.splitlines()
     assert [line.split(":")[0] for line in err] == ["warning", "warning", "error"]
     assert err[2] == "error: latexmk exited with status 12"
+
+
+def test_run_reads_the_process_arguments_and_exits_with_the_status(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("sys.argv", ["uk-invitation-letter", "gen"])
+    with pytest.raises(SystemExit) as excinfo:
+        run()
+    assert excinfo.value.code == 0
+    assert "inviter:" in capsys.readouterr().out
 
 
 def test_unknown_command_exits_via_argparse() -> None:

@@ -3,7 +3,7 @@ import os
 import pathlib
 import sys
 from collections.abc import Sequence
-from typing import Final
+from typing import Final, NoReturn
 
 from .builder import BuildError, Engine, build
 from .starter import load_starter_yaml
@@ -23,7 +23,8 @@ def _default_engine(parser: argparse.ArgumentParser) -> Engine:
         parser.error(f"{ENGINE_ENV}: invalid choice: {value!r} (choose from {', '.join(Engine)})")
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(argv: Sequence[str]) -> int:
+    """Run the CLI on `argv` (without the program name) and return the exit status."""
     parser = argparse.ArgumentParser(prog="uk-invitation-letter", description="Generate a UK invitation letter")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -54,5 +55,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
+def run() -> NoReturn:
+    """Console-script entry point: run `main` on this process's arguments and exit with its status."""
+    sys.exit(main(sys.argv[1:]))
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    run()
