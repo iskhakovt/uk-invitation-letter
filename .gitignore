@@ -2,6 +2,10 @@
 data.yml
 tests/_artifacts/
 
+# Nix
+result
+result-*
+
 # Editors
 .vscode/
 .idea/
