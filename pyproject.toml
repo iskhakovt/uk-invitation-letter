@@ -36,7 +36,7 @@ classifiers = [
 Repository = "https://github.com/iskhakovt/uk-invitation-letter"
 
 [project.scripts]
-uk-invitation-letter = "invitation.main:main"
+uk-invitation-letter = "invitation.main:run"
 
 [dependency-groups]
 dev = [
