@@ -74,7 +74,7 @@ docs:  # optional extra documents
 pipx run uk-invitation-letter render --data data.yml --output invitation.pdf
 ```
 
-The output will be saved to `invitation.pdf`. The default engine is XeLaTeX; pass `--engine tectonic`, `--engine lualatex` or `--engine pdflatex` to use another. pdfLaTeX uses Type 1 fonts with the T1 encoding, so it handles Latin-script text (including accents) but not other scripts; use one of the other engines for those.
+The output will be saved to `invitation.pdf`. The default engine is XeLaTeX; pass `--engine tectonic`, `--engine lualatex` or `--engine pdflatex` to use another, or set `UK_INVITATION_LETTER_ENGINE` to change the default. pdfLaTeX uses Type 1 fonts with the T1 encoding, so it handles Latin-script text (including accents) but not other scripts; use one of the other engines for those.
 
 Text from the data file is escaped for LaTeX automatically, so `&`, `%`, `#`, `_`, `~` and friends render literally. Names and address lines are never broken across lines. In those fields only, a `~` you type is kept as a non-breaking space: write `Mary~Ann Smith` so the short form of the name stays "Mary~Ann" rather than "Mary".
 
@@ -89,4 +89,4 @@ nix run github:iskhakovt/uk-invitation-letter -- gen > data.yml
 nix run github:iskhakovt/uk-invitation-letter -- render --data data.yml --output invitation.pdf
 ```
 
-TeX Live covers `xelatex`, `lualatex` and `pdflatex`. For a smaller download, `github:iskhakovt/uk-invitation-letter#tectonic` ships Tectonic instead (pass `--engine tectonic`), and `#bare` ships no engine and uses whatever TeX is already on `PATH`.
+TeX Live covers `xelatex`, `lualatex` and `pdflatex`. For a smaller download, `github:iskhakovt/uk-invitation-letter#tectonic` ships Tectonic instead and makes it the default engine, and `#bare` ships no engine and uses whatever TeX is already on `PATH`.

@@ -126,6 +126,20 @@
             }:
             let
               engines = lib.optional withTexLive tex ++ lib.optional withTectonic tectonic;
+              wrapperArgs = [
+                "--prefix"
+                "PATH"
+                ":"
+                (lib.makeBinPath engines)
+              ]
+              # Without TeX Live the CLI's default, xelatex, isn't there, so
+              # make tectonic the default. --set-default leaves a value the
+              # user set alone, and `--engine` still overrides either.
+              ++ lib.optionals (withTectonic && !withTexLive) [
+                "--set-default"
+                "UK_INVITATION_LETTER_ENGINE"
+                "tectonic"
+              ];
             in
             if engines == [ ] then
               app
@@ -133,8 +147,7 @@
               app.overrideAttrs (old: {
                 nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.makeWrapper ];
                 postFixup = ''
-                  wrapProgram $out/bin/uk-invitation-letter \
-                    --prefix PATH : ${lib.makeBinPath engines}
+                  wrapProgram $out/bin/uk-invitation-letter ${lib.escapeShellArgs wrapperArgs}
                 '';
               })
           ) { };
@@ -143,7 +156,7 @@
           # TeX Live, so `nix run` renders with the default engine on a machine
           # with no TeX installed.
           default = package;
-          # Tectonic only: `render --engine tectonic`, at under half the size.
+          # Tectonic only, and the default engine, at under half the size.
           tectonic = package.override {
             withTexLive = false;
             withTectonic = true;

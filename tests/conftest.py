@@ -3,6 +3,7 @@ import re
 
 import pytest
 
+from invitation.main import ENGINE_ENV
 from tests.data import README
 
 
@@ -19,6 +20,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Fail, rather than skip, render tests whose TeX engine is not installed",
     )
+
+
+@pytest.fixture(autouse=True)
+def _no_engine_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The default engine comes from the environment; don't let the caller's leak in.
+    monkeypatch.delenv(ENGINE_ENV, raising=False)
 
 
 @pytest.fixture
