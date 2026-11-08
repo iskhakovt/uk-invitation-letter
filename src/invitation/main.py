@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from typing import Final
 
 from .builder import BuildError, Engine, build
-from .template import load_template_yaml
+from .starter import load_starter_yaml
 
 # Sets the default for `render --engine`, so a packager that bundles one engine
 # can make it the default while a user's own setting, or the flag, still wins.
@@ -38,7 +38,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "through latexmk; tectonic is self-contained and fetches packages itself.",
     )
 
-    subparsers.add_parser("gen", help="Print a template data.yml to stdout")
+    subparsers.add_parser("gen", help="Print a starter data.yml to stdout")
 
     args = parser.parse_args(argv)
     if args.command == "render" and args.engine is None:
@@ -47,7 +47,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "render":
             build(args.data, args.output, args.engine)
         elif args.command == "gen":
-            sys.stdout.write(load_template_yaml())
+            sys.stdout.write(load_starter_yaml())
     except (BuildError, OSError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1

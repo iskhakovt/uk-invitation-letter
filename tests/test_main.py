@@ -4,12 +4,12 @@ import pytest
 
 from invitation.builder import BuildError, Engine
 from invitation.main import ENGINE_ENV, main
-from invitation.template import load_template_yaml
+from invitation.starter import load_starter_yaml
 
 
-def test_gen_prints_template(capsys: pytest.CaptureFixture[str]) -> None:
+def test_gen_prints_starter(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["gen"]) == 0
-    assert capsys.readouterr().out == load_template_yaml()
+    assert capsys.readouterr().out == load_starter_yaml()
 
 
 def test_render_missing_data_file(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -151,4 +151,4 @@ def test_render_invalid_engine_env(
 def test_gen_ignores_engine_env(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setenv(ENGINE_ENV, "context")
     assert main(["gen"]) == 0
-    assert capsys.readouterr().out == load_template_yaml()
+    assert capsys.readouterr().out == load_starter_yaml()

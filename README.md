@@ -18,7 +18,7 @@ The examples below run the tool with [pipx](https://pipx.pypa.io/); `uvx uk-invi
 
 ### Usage
 
-1. Create a `data.yml` config file. Generate a starting template with:
+1. Create a `data.yml` config file. Generate a starter file with:
 
 ```bash
 pipx run uk-invitation-letter gen > data.yml
