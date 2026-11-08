@@ -133,12 +133,12 @@
                 (lib.makeBinPath engines)
               ]
               # Without TeX Live the CLI's default, xelatex, isn't there, so
-              # make tectonic the default. --set-default leaves a value the
-              # user set alone, and `--engine` still overrides either.
+              # make tectonic the default. A value the user set is left alone,
+              # and `--engine` still overrides either. Not --set-default: that
+              # keeps an empty value, which the CLI reads as "use xelatex".
               ++ lib.optionals (withTectonic && !withTexLive) [
-                "--set-default"
-                "UK_INVITATION_LETTER_ENGINE"
-                "tectonic"
+                "--run"
+                "export UK_INVITATION_LETTER_ENGINE=\"\${UK_INVITATION_LETTER_ENGINE:-tectonic}\""
               ];
             in
             if engines == [ ] then
